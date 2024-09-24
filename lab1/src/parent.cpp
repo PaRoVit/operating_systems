@@ -9,6 +9,7 @@ void process_input_lines(const std::string &filename1, const std::string &filena
     int line_num = 1;
 
     while (fgets(input, sizeof(input), stdin) != NULL) {
+        std::cout << "Read line: " << input << std::endl;
         input[strcspn(input, "\n")] = 0; 
 
         pid_t pid = fork();

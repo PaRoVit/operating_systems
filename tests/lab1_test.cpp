@@ -18,9 +18,13 @@ TEST(ParentProcessTest, OddLinesGoToFirstFile) {
     std::istringstream input_stream("/home/pvrozhkov/operating_system/operating_systems/out1.txt\n"
                                     "/home/pvrozhkov/operating_system/operating_systems/out2.txt\n"
                                     "Hello\nWorld\nTest\n123\n");
+    std::streambuf* cinbuf = std::cin.rdbuf(); 
+
     std::cin.rdbuf(input_stream.rdbuf());  // Подмена потока
 
     process_input_lines(filename1, filename2);
+
+    std::cin.rdbuf(cinbuf);
 
     std::string content1 = readFileContent(filename1);
     std::string content2 = readFileContent(filename2);
@@ -30,8 +34,8 @@ TEST(ParentProcessTest, OddLinesGoToFirstFile) {
     EXPECT_EQ(content2, "Wrld\n123\n"); 
 }
 
-// Очистка файлов после теста
-TEST(ParentProcessTest, CleanupFiles) {
-    std::remove("/home/pvrozhkov/operating_system/operating_systems/out1.txt");
-    std::remove("/home/pvrozhkov/operating_system/operating_systems/out2.txt");
-}
+// // Очистка файлов после теста
+// TEST(ParentProcessTest, CleanupFiles) {
+//     std::remove("/home/pvrozhkov/operating_system/operating_systems/out1.txt");
+//     std::remove("/home/pvrozhkov/operating_system/operating_systems/out2.txt");
+// }
