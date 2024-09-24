@@ -1606,42 +1606,6 @@
 			"value" : "ON"
 		},
 		{
-			"name" : "Lab1_BINARY_DIR",
-			"properties" : 
-			[
-				{
-					"name" : "HELPSTRING",
-					"value" : "Value Computed by CMake"
-				}
-			],
-			"type" : "STATIC",
-			"value" : "/home/pvrozhkov/operating_system/operating_systems/build/lab1"
-		},
-		{
-			"name" : "Lab1_IS_TOP_LEVEL",
-			"properties" : 
-			[
-				{
-					"name" : "HELPSTRING",
-					"value" : "Value Computed by CMake"
-				}
-			],
-			"type" : "STATIC",
-			"value" : "OFF"
-		},
-		{
-			"name" : "Lab1_SOURCE_DIR",
-			"properties" : 
-			[
-				{
-					"name" : "HELPSTRING",
-					"value" : "Value Computed by CMake"
-				}
-			],
-			"type" : "STATIC",
-			"value" : "/home/pvrozhkov/operating_system/operating_systems/lab1"
-		},
-		{
 			"name" : "OS_LABS_BINARY_DIR",
 			"properties" : 
 			[

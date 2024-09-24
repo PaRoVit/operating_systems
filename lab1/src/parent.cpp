@@ -8,9 +8,8 @@ void process_input_lines(const std::string &filename1, const std::string &filena
     char input[1024];
     int line_num = 1;
 
-    // Чтение строк с консоли до конца ввода (Ctrl+D)
     while (fgets(input, sizeof(input), stdin) != NULL) {
-        input[strcspn(input, "\n")] = 0;  // Убираем символ новой строки
+        input[strcspn(input, "\n")] = 0; 
 
         pid_t pid = fork();
         if (pid == -1) {

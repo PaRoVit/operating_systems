@@ -302,15 +302,6 @@ GIT_EXECUTABLE:FILEPATH=/usr/bin/git
 INSTALL_GTEST:BOOL=ON
 
 //Value Computed by CMake
-Lab1_BINARY_DIR:STATIC=/home/pvrozhkov/operating_system/operating_systems/build/lab1
-
-//Value Computed by CMake
-Lab1_IS_TOP_LEVEL:STATIC=OFF
-
-//Value Computed by CMake
-Lab1_SOURCE_DIR:STATIC=/home/pvrozhkov/operating_system/operating_systems/lab1
-
-//Value Computed by CMake
 OS_LABS_BINARY_DIR:STATIC=/home/pvrozhkov/operating_system/operating_systems/build
 
 //Value Computed by CMake

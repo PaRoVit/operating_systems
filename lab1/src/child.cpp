@@ -22,7 +22,7 @@ int main(int argc, char *argv[]) {
 
     char *input_string = argv[2];
 
-    // Обработка строки: удаляем гласные
+    // Удаляем гласные
     remove_vowels(input_string);
 
     // Запись в файл
