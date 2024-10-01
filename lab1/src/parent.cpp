@@ -34,7 +34,7 @@ void ParentProcess(const char * pathToChild1, const char * pathToChild2, std::is
 
 
     // создаём дочерний процесс 1
-    pid_t pid1 = CreateChild(), pid2 = -1;
+    pid_t pid1 = CreateChild();
     if (pid1 == 0){
         close(child1[WRITE_END]);
         close(child2[READ_END]);
@@ -48,8 +48,37 @@ void ParentProcess(const char * pathToChild1, const char * pathToChild2, std::is
             perror("dup2 error");
             exit(EXIT_FAILURE);
         }
-        
-    }
+        close(file1Descr);
+        Exec("/home/pvrozhkov/operating_system/operating_systems/build/lab1/child");
+    } else {
+        pid_t pid1 = CreateChild(), pid2 = -1;
+        if (pid1 == 0){
+            close(child2[WRITE_END]);
+            close(child1[READ_END]);
+            close(child1[WRITE_END]);
 
+            if (dup2(child2[READ_END], STDIN_FILENO) == -1){
+                perror("dup2 error");
+                exit(EXIT_FAILURE);
+            }
+            if (dup2(file2Descr, STDOUT_FILENO) == -1){
+                perror("dup2 error");
+                exit(EXIT_FAILURE);
+            }
+            close(file2Descr);
+            Exec("/home/pvrozhkov/operating_system/operating_systems/build/lab1/child");
+        } else {
+            close(child1[READ_END]);
+            close(child2[READ_END]);
+
+            // тут прописываю фигню для расхода в разные процессы
+
+
+            close(child1[WRITE_END]);
+            close(child2[WRITE_END]);
+            close(file1Descr);
+            close(file2Descr);
+        }
+    }
 
 }
