@@ -1,41 +1,55 @@
-#include "parent.hpp"
-#include <iostream>
-#include <unistd.h>
-#include <cstring>
-#include <sys/wait.h>
+#include <parent.hpp>
 
-void process_input_lines(const std::string &filename1, const std::string &filename2) {
-    char input[1024];
-    int line_num = 1;
+// функция для чтения строки по символьно
+std::string pull_string_from_file() {
+    std::string input_string;
+    char input_symbol;
 
-    while (fgets(input, sizeof(input), stdin) != NULL) {
-        std::cout << "Read line: " << input << std::endl;
-        input[strcspn(input, "\n")] = 0; 
-
-        pid_t pid = fork();
-        if (pid == -1) {
-            perror("fork");
-            exit(1);
-        } else if (pid == 0) {
-            // Дочерний процесс
-            if (line_num % 2 == 1) {
-                execlp("./child", "./child", filename1.c_str(), input, NULL);
-            } else {
-                execlp("./child", "./child", filename2.c_str(), input, NULL);
-            }
-            perror("execlp");
-            exit(1);
-        } else {
-            // Родительский процесс: дожидаемся завершения дочернего процесса
-            int status;
-            if (waitpid(pid, &status, 0) == -1) {
-                perror("waitpid");
-            }
-            if (WIFEXITED(status)) {
-                std::cout << "Child process " << pid << " exited with status " << WEXITSTATUS(status) << "\n";
-            }
+    // читаем символы из ввода до тех пор, пока не встретим символ новой строки
+    while ((input_symbol = getchar()) != '\n') {
+        if (input_symbol == EOF) {
+            // если достигнут конец файла, возвращаем пустую строку
+            return "";
         }
-        line_num++;
-
+        input_string += input_symbol; // добавляем символ к строке
     }
+
+    return input_string; // возвращаем полученную строку
+}
+
+void ParentProcess(const char * pathToChild1, const char * pathToChild2, std::istream & streamIn, std::ostream & streamOut ){
+    // pip для передачи от родителя к 1 дочернему
+    int child1[2];
+    CreatePipe(child1);
+
+    // pip для передачи от родителя к 2 дочернему
+    int child2[2];
+    CreatePipe(child2);
+
+    // передадим имена файлов для записи
+    std::string file1 = pull_string_from_file();
+    std::string file2 = pull_string_from_file();
+    int file1Descr = open(file1.c_str(), std::ios::out | std::ios::trunc, 0777);
+    int file2Descr = open(file2.c_str(), std::ios::out | std::ios::trunc, 0777);
+
+
+    // создаём дочерний процесс 1
+    pid_t pid1 = CreateChild(), pid2 = -1;
+    if (pid1 == 0){
+        close(child1[WRITE_END]);
+        close(child2[READ_END]);
+        close(child2[WRITE_END]);
+
+        if (dup2(child1[READ_END], STDIN_FILENO) == -1){
+            perror("dup2 error");
+            exit(EXIT_FAILURE);
+        }
+        if (dup2(file1Descr, STDOUT_FILENO) == -1){
+            perror("dup2 error");
+            exit(EXIT_FAILURE);
+        }
+        
+    }
+
+
 }

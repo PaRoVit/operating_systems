@@ -1,3 +1,5 @@
-#include <string>
+#pragma once
 
-void process_input_lines(const std::string &filename1, const std::string &filename2);
+#include <utils.hpp>
+
+void ParentProcess(const char * pathToChild1, const char * pathToChild2, std::istream & streamIn, std::ostream & streamOut);
