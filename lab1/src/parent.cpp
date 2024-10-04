@@ -76,18 +76,9 @@ void ParentProcess(const char * pathToChild1, const char * pathToChild2, std::is
             while (std::getline(streamIn, string_from_file))
             {
                 int length = string_from_file.size();
-                if (!(string_sequence_number % 2 != 0)) 
-                {
-                    std::cerr << string_from_file<< " передана строка и её размер " << length << "\n";
-                    write(child1[WRITE_END], &length, sizeof(int));
-                    write(child1[WRITE_END], string_from_file.c_str(), string_from_file.size());
-                    
-                }
-                else
-                {
-                    write(child2[WRITE_END], &length, sizeof(int));
-                    write(child2[WRITE_END], string_from_file.c_str(), string_from_file.size());
-                }
+                int pipe_write_end = (string_sequence_number % 2 == 0) ? child1[WRITE_END] : child2[WRITE_END];
+                write(pipe_write_end, &length, sizeof(length));
+                write(pipe_write_end, string_from_file.c_str(), length);
                 string_sequence_number++;
             }
             // тут прописываю фигню для расхода в разные процессы

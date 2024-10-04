@@ -16,17 +16,17 @@ std::string removeVowels(const std::string& input) {
 }
 
 int main() {
-    ssize_t input_size;
+    int input_size;
     // Читаем из стандартного ввода, пока есть данные(ориентируемся на размер входной строки)
     while (read(STDIN_FILENO, &input_size, sizeof(int)) > 0) {
-        std::cerr << input_size << " получен размер строки\n ";
+        // std::cerr << input_size << " получен размер строки\n ";
         std::string input_string(input_size, '\0');
         read(STDIN_FILENO, &input_string[0], input_size);
         
         // Удаляем гласные из строки
         std::string result_string = removeVowels(input_string);
 
-        std::cerr << input_string << ' ' << result_string << '\n';
+        // std::cerr << input_string << ' ' << result_string << '\n';
 
         // Записываем строку 
         write(STDOUT_FILENO, result_string.c_str(), result_string.size());
