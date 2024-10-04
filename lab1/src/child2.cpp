@@ -1,10 +1,10 @@
 #include <iostream>
 #include <string>
-#include <unistd.h> // для read() и write()
-#include <algorithm> // для remove_if
+#include <unistd.h> 
+#include <algorithm> 
 #include <vector>
 
-// Функция для удаления гласных (в любом регистре) из строки, не меняя регистр
+
 std::string removeVowels(const std::string& input) {
     std::string result = input;
     result.erase(std::remove_if(result.begin(), result.end(), [](char c) {
@@ -17,8 +17,9 @@ std::string removeVowels(const std::string& input) {
 
 int main() {
     ssize_t input_size;
-    // Читаем из стандартного ввода, пока есть данные
-    while (read(STDIN_FILENO, &input_size, sizeof(input_size)) > 0) {
+    // Читаем из стандартного ввода, пока есть данные(ориентируемся на размер входной строки)
+    while (read(STDIN_FILENO, &input_size, sizeof(int)) > 0) {
+        std::cerr << input_size << " получен размер строки\n ";
         std::string input_string(input_size, '\0');
         read(STDIN_FILENO, &input_string[0], input_size);
         
@@ -27,9 +28,8 @@ int main() {
 
         std::cerr << input_string << ' ' << result_string << '\n';
 
-        // Записываем строку без гласных в стандартный вывод
+        // Записываем строку 
         write(STDOUT_FILENO, result_string.c_str(), result_string.size());
-        // Добавляем символ новой строки
         write(STDOUT_FILENO, "\n", 1);
     }
 
