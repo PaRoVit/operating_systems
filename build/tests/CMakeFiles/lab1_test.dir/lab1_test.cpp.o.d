@@ -272,4 +272,12 @@ tests/CMakeFiles/lab1_test.dir/lab1_test.cpp.o: \
  /usr/include/x86_64-linux-gnu/c++/11/bits/basic_file.h \
  /usr/include/x86_64-linux-gnu/c++/11/bits/c++io.h \
  /usr/include/c++/11/bits/fstream.tcc \
- /home/pvrozhkov/operating_system/operating_systems/tests/../lab1/include/parent.hpp
+ /home/pvrozhkov/operating_system/operating_systems/tests/../lab1/include/parent.hpp \
+ /home/pvrozhkov/operating_system/operating_systems/tests/../lab1/include/utils.hpp \
+ /usr/include/c++/11/algorithm \
+ /usr/include/c++/11/pstl/glue_algorithm_defs.h \
+ /usr/include/c++/11/ext/stdio_filebuf.h /usr/include/fcntl.h \
+ /usr/include/x86_64-linux-gnu/bits/fcntl.h \
+ /usr/include/x86_64-linux-gnu/bits/fcntl-linux.h \
+ /usr/include/x86_64-linux-gnu/bits/types/struct_iovec.h \
+ /usr/include/linux/falloc.h

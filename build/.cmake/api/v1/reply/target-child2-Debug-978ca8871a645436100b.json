@@ -2,7 +2,7 @@
 	"artifacts" : 
 	[
 		{
-			"path" : "lab1/child"
+			"path" : "lab1/child2"
 		}
 	],
 	"backtrace" : 1,
@@ -42,7 +42,7 @@
 			{
 				"command" : 2,
 				"file" : 0,
-				"line" : 12,
+				"line" : 11,
 				"parent" : 0
 			}
 		]
@@ -94,7 +94,7 @@
 			]
 		}
 	],
-	"id" : "child::@e3a54a2ab40fd51109ef",
+	"id" : "child2::@e3a54a2ab40fd51109ef",
 	"link" : 
 	{
 		"commandFragments" : 
@@ -110,8 +110,8 @@
 		],
 		"language" : "CXX"
 	},
-	"name" : "child",
-	"nameOnDisk" : "child",
+	"name" : "child2",
+	"nameOnDisk" : "child2",
 	"paths" : 
 	{
 		"build" : "lab1",
@@ -132,7 +132,7 @@
 		{
 			"backtrace" : 1,
 			"compileGroupIndex" : 0,
-			"path" : "lab1/src/child.cpp",
+			"path" : "lab1/src/child2.cpp",
 			"sourceGroupIndex" : 0
 		}
 	],

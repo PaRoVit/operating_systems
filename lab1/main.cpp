@@ -1,18 +1,9 @@
-#include <iostream>
-#include <string>
 #include "parent.hpp"
 
-int main() {
-    std::string filename1, filename2;
 
-    std::cout << "Введите имя файла для процесса child1: ";
-    std::getline(std::cin, filename1);
+int main(void) {
+    
+    ParentProcess("/home/pvrozhkov/operating_system/operating_systems/build/lab1/child1", "/home/pvrozhkov/operating_system/operating_systems/build/lab1/child2", std::cin);
 
-    std::cout << "Введите имя файла для процесса child2: ";
-    std::getline(std::cin, filename2);
-
-    std::cout << "Введите строки для обработки (Ctrl+D для завершения):\n";
-    process_input_lines(filename1, filename2);
-
-    return 0;
+    exit(EXIT_SUCCESS);
 }

@@ -17,7 +17,7 @@ std::string pull_string_from_file() {
     return input_string; // возвращаем полученную строку
 }
 
-void ParentProcess(const char * pathToChild1, const char * pathToChild2, std::istream & streamIn, std::ostream & streamOut ){
+void ParentProcess(const char * pathToChild1, const char * pathToChild2, std::istream & streamIn){
     // pip для передачи от родителя к 1 дочернему
     int child1[2];
     CreatePipe(child1);
@@ -29,8 +29,8 @@ void ParentProcess(const char * pathToChild1, const char * pathToChild2, std::is
     // передадим имена файлов для записи
     std::string file1 = pull_string_from_file();
     std::string file2 = pull_string_from_file();
-    int file1Descr = open(file1.c_str(), std::ios::out | std::ios::trunc, 0777);
-    int file2Descr = open(file2.c_str(), std::ios::out | std::ios::trunc, 0777);
+    int file1Descr = open(file1.c_str(), O_WRONLY | O_CREAT | O_TRUNC, 0777);
+    int file2Descr = open(file2.c_str(), O_WRONLY | O_CREAT | O_TRUNC, 0777);
 
 
     // создаём дочерний процесс 1
@@ -45,14 +45,14 @@ void ParentProcess(const char * pathToChild1, const char * pathToChild2, std::is
             exit(EXIT_FAILURE);
         }
         if (dup2(file1Descr, STDOUT_FILENO) == -1){
-            perror("dup2 error");
+            perror("dup2 error file1");
             exit(EXIT_FAILURE);
         }
         close(file1Descr);
-        Exec("/home/pvrozhkov/operating_system/operating_systems/build/lab1/child");
+        Exec(pathToChild1);
     } else {
-        pid_t pid1 = CreateChild(), pid2 = -1;
-        if (pid1 == 0){
+        pid_t pid2 = CreateChild();
+        if (pid2 == 0){
             close(child2[WRITE_END]);
             close(child1[READ_END]);
             close(child1[WRITE_END]);
@@ -62,15 +62,34 @@ void ParentProcess(const char * pathToChild1, const char * pathToChild2, std::is
                 exit(EXIT_FAILURE);
             }
             if (dup2(file2Descr, STDOUT_FILENO) == -1){
-                perror("dup2 error");
+                perror("dup2 error file2");
                 exit(EXIT_FAILURE);
             }
             close(file2Descr);
-            Exec("/home/pvrozhkov/operating_system/operating_systems/build/lab1/child");
+            Exec(pathToChild2);
         } else {
             close(child1[READ_END]);
             close(child2[READ_END]);
 
+            std::string string_from_file; 
+            int string_sequence_number = 0;
+            while (std::getline(streamIn, string_from_file))
+            {
+                int length = string_from_file.size();
+                if (!(string_sequence_number % 2 != 0)) 
+                {
+                    std::cerr << string_from_file<< " передана строка и её размер " << length << "\n";
+                    write(child1[WRITE_END], &length, sizeof(int));
+                    write(child1[WRITE_END], string_from_file.c_str(), string_from_file.size());
+                    
+                }
+                else
+                {
+                    write(child2[WRITE_END], &length, sizeof(int));
+                    write(child2[WRITE_END], string_from_file.c_str(), string_from_file.size());
+                }
+                string_sequence_number++;
+            }
             // тут прописываю фигню для расхода в разные процессы
 
 

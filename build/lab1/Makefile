@@ -95,51 +95,6 @@ rebuild_cache:
 rebuild_cache/fast: rebuild_cache
 .PHONY : rebuild_cache/fast
 
-# Special rule for the target list_install_components
-list_install_components:
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --cyan "Available install components are: \"Unspecified\""
-.PHONY : list_install_components
-
-# Special rule for the target list_install_components
-list_install_components/fast: list_install_components
-.PHONY : list_install_components/fast
-
-# Special rule for the target install
-install: preinstall
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --cyan "Install the project..."
-	/usr/bin/cmake -P cmake_install.cmake
-.PHONY : install
-
-# Special rule for the target install
-install/fast: preinstall/fast
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --cyan "Install the project..."
-	/usr/bin/cmake -P cmake_install.cmake
-.PHONY : install/fast
-
-# Special rule for the target install/local
-install/local: preinstall
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --cyan "Installing only the local directory..."
-	/usr/bin/cmake -DCMAKE_INSTALL_LOCAL_ONLY=1 -P cmake_install.cmake
-.PHONY : install/local
-
-# Special rule for the target install/local
-install/local/fast: preinstall/fast
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --cyan "Installing only the local directory..."
-	/usr/bin/cmake -DCMAKE_INSTALL_LOCAL_ONLY=1 -P cmake_install.cmake
-.PHONY : install/local/fast
-
-# Special rule for the target install/strip
-install/strip: preinstall
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --cyan "Installing the project stripped..."
-	/usr/bin/cmake -DCMAKE_INSTALL_DO_STRIP=1 -P cmake_install.cmake
-.PHONY : install/strip
-
-# Special rule for the target install/strip
-install/strip/fast: preinstall/fast
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --cyan "Installing the project stripped..."
-	/usr/bin/cmake -DCMAKE_INSTALL_DO_STRIP=1 -P cmake_install.cmake
-.PHONY : install/strip/fast
-
 # The main all target
 all: cmake_check_build_system
 	cd /home/pvrozhkov/operating_system/operating_systems/build && $(CMAKE_COMMAND) -E cmake_progress_start /home/pvrozhkov/operating_system/operating_systems/build/CMakeFiles /home/pvrozhkov/operating_system/operating_systems/build/lab1//CMakeFiles/progress.marks
@@ -186,18 +141,32 @@ lab1/fast:
 .PHONY : lab1/fast
 
 # Convenience name for target.
-lab1/CMakeFiles/child.dir/rule:
-	cd /home/pvrozhkov/operating_system/operating_systems/build && $(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 lab1/CMakeFiles/child.dir/rule
-.PHONY : lab1/CMakeFiles/child.dir/rule
+lab1/CMakeFiles/child1.dir/rule:
+	cd /home/pvrozhkov/operating_system/operating_systems/build && $(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 lab1/CMakeFiles/child1.dir/rule
+.PHONY : lab1/CMakeFiles/child1.dir/rule
 
 # Convenience name for target.
-child: lab1/CMakeFiles/child.dir/rule
-.PHONY : child
+child1: lab1/CMakeFiles/child1.dir/rule
+.PHONY : child1
 
 # fast build rule for target.
-child/fast:
-	cd /home/pvrozhkov/operating_system/operating_systems/build && $(MAKE) $(MAKESILENT) -f lab1/CMakeFiles/child.dir/build.make lab1/CMakeFiles/child.dir/build
-.PHONY : child/fast
+child1/fast:
+	cd /home/pvrozhkov/operating_system/operating_systems/build && $(MAKE) $(MAKESILENT) -f lab1/CMakeFiles/child1.dir/build.make lab1/CMakeFiles/child1.dir/build
+.PHONY : child1/fast
+
+# Convenience name for target.
+lab1/CMakeFiles/child2.dir/rule:
+	cd /home/pvrozhkov/operating_system/operating_systems/build && $(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 lab1/CMakeFiles/child2.dir/rule
+.PHONY : lab1/CMakeFiles/child2.dir/rule
+
+# Convenience name for target.
+child2: lab1/CMakeFiles/child2.dir/rule
+.PHONY : child2
+
+# fast build rule for target.
+child2/fast:
+	cd /home/pvrozhkov/operating_system/operating_systems/build && $(MAKE) $(MAKESILENT) -f lab1/CMakeFiles/child2.dir/build.make lab1/CMakeFiles/child2.dir/build
+.PHONY : child2/fast
 
 main.o: main.cpp.o
 .PHONY : main.o
@@ -223,29 +192,53 @@ main.cpp.s:
 	cd /home/pvrozhkov/operating_system/operating_systems/build && $(MAKE) $(MAKESILENT) -f lab1/CMakeFiles/lab1.dir/build.make lab1/CMakeFiles/lab1.dir/main.cpp.s
 .PHONY : main.cpp.s
 
-src/child.o: src/child.cpp.o
-.PHONY : src/child.o
+src/child1.o: src/child1.cpp.o
+.PHONY : src/child1.o
 
 # target to build an object file
-src/child.cpp.o:
-	cd /home/pvrozhkov/operating_system/operating_systems/build && $(MAKE) $(MAKESILENT) -f lab1/CMakeFiles/child.dir/build.make lab1/CMakeFiles/child.dir/src/child.cpp.o
-.PHONY : src/child.cpp.o
+src/child1.cpp.o:
+	cd /home/pvrozhkov/operating_system/operating_systems/build && $(MAKE) $(MAKESILENT) -f lab1/CMakeFiles/child1.dir/build.make lab1/CMakeFiles/child1.dir/src/child1.cpp.o
+.PHONY : src/child1.cpp.o
 
-src/child.i: src/child.cpp.i
-.PHONY : src/child.i
+src/child1.i: src/child1.cpp.i
+.PHONY : src/child1.i
 
 # target to preprocess a source file
-src/child.cpp.i:
-	cd /home/pvrozhkov/operating_system/operating_systems/build && $(MAKE) $(MAKESILENT) -f lab1/CMakeFiles/child.dir/build.make lab1/CMakeFiles/child.dir/src/child.cpp.i
-.PHONY : src/child.cpp.i
+src/child1.cpp.i:
+	cd /home/pvrozhkov/operating_system/operating_systems/build && $(MAKE) $(MAKESILENT) -f lab1/CMakeFiles/child1.dir/build.make lab1/CMakeFiles/child1.dir/src/child1.cpp.i
+.PHONY : src/child1.cpp.i
 
-src/child.s: src/child.cpp.s
-.PHONY : src/child.s
+src/child1.s: src/child1.cpp.s
+.PHONY : src/child1.s
 
 # target to generate assembly for a file
-src/child.cpp.s:
-	cd /home/pvrozhkov/operating_system/operating_systems/build && $(MAKE) $(MAKESILENT) -f lab1/CMakeFiles/child.dir/build.make lab1/CMakeFiles/child.dir/src/child.cpp.s
-.PHONY : src/child.cpp.s
+src/child1.cpp.s:
+	cd /home/pvrozhkov/operating_system/operating_systems/build && $(MAKE) $(MAKESILENT) -f lab1/CMakeFiles/child1.dir/build.make lab1/CMakeFiles/child1.dir/src/child1.cpp.s
+.PHONY : src/child1.cpp.s
+
+src/child2.o: src/child2.cpp.o
+.PHONY : src/child2.o
+
+# target to build an object file
+src/child2.cpp.o:
+	cd /home/pvrozhkov/operating_system/operating_systems/build && $(MAKE) $(MAKESILENT) -f lab1/CMakeFiles/child2.dir/build.make lab1/CMakeFiles/child2.dir/src/child2.cpp.o
+.PHONY : src/child2.cpp.o
+
+src/child2.i: src/child2.cpp.i
+.PHONY : src/child2.i
+
+# target to preprocess a source file
+src/child2.cpp.i:
+	cd /home/pvrozhkov/operating_system/operating_systems/build && $(MAKE) $(MAKESILENT) -f lab1/CMakeFiles/child2.dir/build.make lab1/CMakeFiles/child2.dir/src/child2.cpp.i
+.PHONY : src/child2.cpp.i
+
+src/child2.s: src/child2.cpp.s
+.PHONY : src/child2.s
+
+# target to generate assembly for a file
+src/child2.cpp.s:
+	cd /home/pvrozhkov/operating_system/operating_systems/build && $(MAKE) $(MAKESILENT) -f lab1/CMakeFiles/child2.dir/build.make lab1/CMakeFiles/child2.dir/src/child2.cpp.s
+.PHONY : src/child2.cpp.s
 
 src/parent.o: src/parent.cpp.o
 .PHONY : src/parent.o
@@ -271,6 +264,30 @@ src/parent.cpp.s:
 	cd /home/pvrozhkov/operating_system/operating_systems/build && $(MAKE) $(MAKESILENT) -f lab1/CMakeFiles/lab1.dir/build.make lab1/CMakeFiles/lab1.dir/src/parent.cpp.s
 .PHONY : src/parent.cpp.s
 
+src/utils.o: src/utils.cpp.o
+.PHONY : src/utils.o
+
+# target to build an object file
+src/utils.cpp.o:
+	cd /home/pvrozhkov/operating_system/operating_systems/build && $(MAKE) $(MAKESILENT) -f lab1/CMakeFiles/lab1.dir/build.make lab1/CMakeFiles/lab1.dir/src/utils.cpp.o
+.PHONY : src/utils.cpp.o
+
+src/utils.i: src/utils.cpp.i
+.PHONY : src/utils.i
+
+# target to preprocess a source file
+src/utils.cpp.i:
+	cd /home/pvrozhkov/operating_system/operating_systems/build && $(MAKE) $(MAKESILENT) -f lab1/CMakeFiles/lab1.dir/build.make lab1/CMakeFiles/lab1.dir/src/utils.cpp.i
+.PHONY : src/utils.cpp.i
+
+src/utils.s: src/utils.cpp.s
+.PHONY : src/utils.s
+
+# target to generate assembly for a file
+src/utils.cpp.s:
+	cd /home/pvrozhkov/operating_system/operating_systems/build && $(MAKE) $(MAKESILENT) -f lab1/CMakeFiles/lab1.dir/build.make lab1/CMakeFiles/lab1.dir/src/utils.cpp.s
+.PHONY : src/utils.cpp.s
+
 # Help Target
 help:
 	@echo "The following are some of the valid targets for this Makefile:"
@@ -278,23 +295,26 @@ help:
 	@echo "... clean"
 	@echo "... depend"
 	@echo "... edit_cache"
-	@echo "... install"
-	@echo "... install/local"
-	@echo "... install/strip"
-	@echo "... list_install_components"
 	@echo "... rebuild_cache"
 	@echo "... test"
-	@echo "... child"
+	@echo "... child1"
+	@echo "... child2"
 	@echo "... lab1"
 	@echo "... main.o"
 	@echo "... main.i"
 	@echo "... main.s"
-	@echo "... src/child.o"
-	@echo "... src/child.i"
-	@echo "... src/child.s"
+	@echo "... src/child1.o"
+	@echo "... src/child1.i"
+	@echo "... src/child1.s"
+	@echo "... src/child2.o"
+	@echo "... src/child2.i"
+	@echo "... src/child2.s"
 	@echo "... src/parent.o"
 	@echo "... src/parent.i"
 	@echo "... src/parent.s"
+	@echo "... src/utils.o"
+	@echo "... src/utils.i"
+	@echo "... src/utils.s"
 .PHONY : help
 
 

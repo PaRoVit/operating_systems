@@ -10,6 +10,7 @@ set(CMAKE_DEPENDS_LANGUAGES
 set(CMAKE_DEPENDS_DEPENDENCY_FILES
   "/home/pvrozhkov/operating_system/operating_systems/lab1/main.cpp" "lab1/CMakeFiles/lab1.dir/main.cpp.o" "gcc" "lab1/CMakeFiles/lab1.dir/main.cpp.o.d"
   "/home/pvrozhkov/operating_system/operating_systems/lab1/src/parent.cpp" "lab1/CMakeFiles/lab1.dir/src/parent.cpp.o" "gcc" "lab1/CMakeFiles/lab1.dir/src/parent.cpp.o.d"
+  "/home/pvrozhkov/operating_system/operating_systems/lab1/src/utils.cpp" "lab1/CMakeFiles/lab1.dir/src/utils.cpp.o" "gcc" "lab1/CMakeFiles/lab1.dir/src/utils.cpp.o.d"
   )
 
 # Targets to which this target links.
