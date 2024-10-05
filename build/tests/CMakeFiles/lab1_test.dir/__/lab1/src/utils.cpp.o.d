@@ -1,8 +1,7 @@
-lab1/CMakeFiles/lab1.dir/src/parent.cpp.o: \
- /home/pvrozhkov/operating_system/operating_systems/lab1/src/parent.cpp \
+tests/CMakeFiles/lab1_test.dir/__/lab1/src/utils.cpp.o: \
+ /home/pvrozhkov/operating_system/operating_systems/lab1/src/utils.cpp \
  /usr/include/stdc-predef.h \
- /home/pvrozhkov/operating_system/operating_systems/lab1/include/../include/parent.hpp \
- /home/pvrozhkov/operating_system/operating_systems/lab1/include/utils.hpp \
+ /home/pvrozhkov/operating_system/operating_systems/tests/../lab1/include/utils.hpp \
  /usr/include/c++/11/sstream /usr/include/c++/11/istream \
  /usr/include/c++/11/ios /usr/include/c++/11/iosfwd \
  /usr/include/x86_64-linux-gnu/c++/11/bits/c++config.h \

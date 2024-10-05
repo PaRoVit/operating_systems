@@ -1,3 +1,2 @@
-lab1_test 0 0
+lab1_test 1 0.00613709
 ---
-lab1_test

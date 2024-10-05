@@ -1,4 +1,4 @@
-#include <parent.hpp>
+#include <../include/parent.hpp>
 
 // функция для чтения строки по символьно
 std::string pull_string_from_file() {
@@ -18,17 +18,17 @@ std::string pull_string_from_file() {
 }
 
 void ParentProcess(const char * pathToChild1, const char * pathToChild2, std::istream & streamIn){
-    // pip для передачи от родителя к 1 дочернему
+    // pipe для передачи от родителя к 1 дочернему
     int child1[2];
     CreatePipe(child1);
 
-    // pip для передачи от родителя к 2 дочернему
+    // pipe для передачи от родителя к 2 дочернему
     int child2[2];
     CreatePipe(child2);
 
-    // передадим имена файлов для записи
-    std::string file1 = pull_string_from_file();
-    std::string file2 = pull_string_from_file();
+    // передадим имена файлов для записи(они сохраняются в build/lab1/outX.txt)
+    std::string file1 = "out1.txt";
+    std::string file2 = "out2.txt";
     int file1Descr = open(file1.c_str(), O_WRONLY | O_CREAT | O_TRUNC, 0777);
     int file2Descr = open(file2.c_str(), O_WRONLY | O_CREAT | O_TRUNC, 0777);
 
@@ -40,6 +40,7 @@ void ParentProcess(const char * pathToChild1, const char * pathToChild2, std::is
         close(child2[READ_END]);
         close(child2[WRITE_END]);
 
+        // перенаправляем потоки
         if (dup2(child1[READ_END], STDIN_FILENO) == -1){
             perror("dup2 error");
             exit(EXIT_FAILURE);
@@ -49,8 +50,10 @@ void ParentProcess(const char * pathToChild1, const char * pathToChild2, std::is
             exit(EXIT_FAILURE);
         }
         close(file1Descr);
+        // выполнение первого дочернего процесса
         Exec(pathToChild1);
     } else {
+        // создаём 2 дочерний процесс и всё тоде самое
         pid_t pid2 = CreateChild();
         if (pid2 == 0){
             close(child2[WRITE_END]);
@@ -68,26 +71,32 @@ void ParentProcess(const char * pathToChild1, const char * pathToChild2, std::is
             close(file2Descr);
             Exec(pathToChild2);
         } else {
+            // дальше отправим каждую строку в нужный для неё дочерний процесс
             close(child1[READ_END]);
             close(child2[READ_END]);
 
             std::string string_from_file; 
             int string_sequence_number = 0;
+            // читаем строки на вход
             while (std::getline(streamIn, string_from_file))
             {
-                int length = string_from_file.size();
-                int pipe_write_end = (string_sequence_number % 2 == 0) ? child1[WRITE_END] : child2[WRITE_END];
+                int length = string_from_file.size(); //размеры входной строки, которые потом отправим в доч.процесс
+                int pipe_write_end = (string_sequence_number % 2 == 0) ? child1[WRITE_END] : child2[WRITE_END]; // если true то присваиваем child1
+                // закидываем в поток сначала размеры строки, потом саму строку
                 write(pipe_write_end, &length, sizeof(length));
                 write(pipe_write_end, string_from_file.c_str(), length);
                 string_sequence_number++;
             }
-            // тут прописываю фигню для расхода в разные процессы
 
-
+            // закрываем остатки
             close(child1[WRITE_END]);
             close(child2[WRITE_END]);
             close(file1Descr);
             close(file2Descr);
+
+            // ожидаем закрытие дочерних процессов
+            waitpid(pid1, nullptr, 0);
+            waitpid(pid2, nullptr, 0);
         }
     }
 

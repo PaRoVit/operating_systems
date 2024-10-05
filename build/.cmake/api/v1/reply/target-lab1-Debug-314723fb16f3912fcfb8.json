@@ -107,11 +107,11 @@
 	[
 		{
 			"backtrace" : 2,
-			"id" : "child2::@e3a54a2ab40fd51109ef"
+			"id" : "child1::@e3a54a2ab40fd51109ef"
 		},
 		{
 			"backtrace" : 2,
-			"id" : "child1::@e3a54a2ab40fd51109ef"
+			"id" : "child2::@e3a54a2ab40fd51109ef"
 		}
 	],
 	"id" : "lab1::@e3a54a2ab40fd51109ef",

@@ -209,6 +209,30 @@ __/lab1/src/parent.cpp.s:
 	cd /home/pvrozhkov/operating_system/operating_systems/build && $(MAKE) $(MAKESILENT) -f tests/CMakeFiles/lab1_test.dir/build.make tests/CMakeFiles/lab1_test.dir/__/lab1/src/parent.cpp.s
 .PHONY : __/lab1/src/parent.cpp.s
 
+__/lab1/src/utils.o: __/lab1/src/utils.cpp.o
+.PHONY : __/lab1/src/utils.o
+
+# target to build an object file
+__/lab1/src/utils.cpp.o:
+	cd /home/pvrozhkov/operating_system/operating_systems/build && $(MAKE) $(MAKESILENT) -f tests/CMakeFiles/lab1_test.dir/build.make tests/CMakeFiles/lab1_test.dir/__/lab1/src/utils.cpp.o
+.PHONY : __/lab1/src/utils.cpp.o
+
+__/lab1/src/utils.i: __/lab1/src/utils.cpp.i
+.PHONY : __/lab1/src/utils.i
+
+# target to preprocess a source file
+__/lab1/src/utils.cpp.i:
+	cd /home/pvrozhkov/operating_system/operating_systems/build && $(MAKE) $(MAKESILENT) -f tests/CMakeFiles/lab1_test.dir/build.make tests/CMakeFiles/lab1_test.dir/__/lab1/src/utils.cpp.i
+.PHONY : __/lab1/src/utils.cpp.i
+
+__/lab1/src/utils.s: __/lab1/src/utils.cpp.s
+.PHONY : __/lab1/src/utils.s
+
+# target to generate assembly for a file
+__/lab1/src/utils.cpp.s:
+	cd /home/pvrozhkov/operating_system/operating_systems/build && $(MAKE) $(MAKESILENT) -f tests/CMakeFiles/lab1_test.dir/build.make tests/CMakeFiles/lab1_test.dir/__/lab1/src/utils.cpp.s
+.PHONY : __/lab1/src/utils.cpp.s
+
 lab1_test.o: lab1_test.cpp.o
 .PHONY : lab1_test.o
 
@@ -250,6 +274,9 @@ help:
 	@echo "... __/lab1/src/parent.o"
 	@echo "... __/lab1/src/parent.i"
 	@echo "... __/lab1/src/parent.s"
+	@echo "... __/lab1/src/utils.o"
+	@echo "... __/lab1/src/utils.i"
+	@echo "... __/lab1/src/utils.s"
 	@echo "... lab1_test.o"
 	@echo "... lab1_test.i"
 	@echo "... lab1_test.s"

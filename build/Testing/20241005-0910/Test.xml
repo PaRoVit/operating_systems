@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Site BuildName="(empty)"
+	BuildStamp="20241005-0910-Experimental"
+	Name="(empty)"
+	Generator="ctest-3.22.1"
+	CompilerName=""
+	CompilerVersion=""
+	OSName="Linux"
+	Hostname="PabloR"
+	OSRelease="5.15.153.1-microsoft-standard-WSL2"
+	OSVersion="#1 SMP Fri Mar 29 23:14:13 UTC 2024"
+	OSPlatform="x86_64"
+	Is64Bits="1"
+	VendorString="AuthenticAMD"
+	VendorID="Advanced Micro Devices"
+	FamilyID="23"
+	ModelID="104"
+	ProcessorCacheSize="512"
+	NumberOfLogicalCPU="12"
+	NumberOfPhysicalCPU="6"
+	TotalVirtualMemory="1024"
+	TotalPhysicalMemory="3641"
+	LogicalProcessorsPerPhysical="2"
+	ProcessorClockFrequency="2095.99"
+	>
+	<Testing>
+		<StartDateTime>Oct 05 13:06 MSK</StartDateTime>
+		<StartTestTime>1728122782</StartTestTime>
+		<TestList>
+			<Test>./tests/lab1_test</Test>
+		</TestList>
+		<Test Status="passed">
+			<Name>lab1_test</Name>
+			<Path>./tests</Path>
+			<FullName>./tests/lab1_test</FullName>
+			<FullCommandLine>/home/pvrozhkov/operating_system/operating_systems/build/tests/lab1_test</FullCommandLine>
+			<Results>
+				<NamedMeasurement type="numeric/double" name="Execution Time">
+					<Value>0.00613709</Value>
+				</NamedMeasurement>
+				<NamedMeasurement type="numeric/double" name="Processors">
+					<Value>1</Value>
+				</NamedMeasurement>
+				<NamedMeasurement type="text/string" name="Completion Status">
+					<Value>Completed</Value>
+				</NamedMeasurement>
+				<NamedMeasurement type="text/string" name="Command Line">
+					<Value>/home/pvrozhkov/operating_system/operating_systems/build/tests/lab1_test</Value>
+				</NamedMeasurement>
+				<NamedMeasurement type="text/string" name="Environment">
+					<Value>#CTEST_RESOURCE_GROUP_COUNT=</Value>
+				</NamedMeasurement>
+				<Measurement>
+					<Value encoding="base64" compression="gzip">eJyNUU1vgzAMvfMrfIQDZO19h2lfmiZtCLYTQigFD6LmA8WBafv1C1BV7appvFNsv+dnO9mgtdAtKC50GMGHNQpYZxSyfrTmu9ubkZkeLXeeVdEXOVQXCWK7QciGVQ32xFpjWokOycVk65OQzeH0qia7pK6D4vqIErLDLFuYOLQMs5kDoEE4TIIiPqKER2l2XC511KOwRivUnosuHvpf5LOmKbeemFpTI9GbzwcFZO8vMKO8LCe3Hdb73Fk/Hj3pByGRvGTB6/NaCYQbUBT9ayaR66Ff53LChfBqab9+bwi3XgLOOC6jYN15HXIbN+ZTn//en78Gluvk3Mgvld7k+f3ddICDMAl+APII16M=</Value>
+				</Measurement>
+			</Results>
+		</Test>
+		<EndDateTime>Oct 05 13:06 MSK</EndDateTime>
+		<EndTestTime>1728122782</EndTestTime>
+		<ElapsedMinutes>0</ElapsedMinutes>
+	</Testing>
+</Site>

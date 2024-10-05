@@ -14,4 +14,4 @@ include(FindThreads)
 
 add_subdirectory(lab1)
 
-# add_subdirectory(tests)
+add_subdirectory(tests)
