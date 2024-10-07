@@ -25,6 +25,7 @@ void Exec(const char * pathToChild){
     }
 }
 
+// удаление гласных
 std::string removeVowels(const std::string& input) {
     std::string result = input;
     // обход по строке при помощи лямбда функции, гласные смещаются назад при помощи remove_if, а erase их удаляет
@@ -36,16 +37,18 @@ std::string removeVowels(const std::string& input) {
     return result;
 }
 
+// чтение строки из пайпа
 ssize_t readStringFromPipe(int pipeFd, std::string &input_string) {
     int input_size;
-    ssize_t bytes_read = read(pipeFd, &input_size, sizeof(int)); // Чтение размера строки
+    // получаем на вход рамер входной строки, и если норм то идём дальше
+    ssize_t bytes_read = read(pipeFd, &input_size, sizeof(int)); 
     if (bytes_read == -1) {
         perror("read error");
         exit(EXIT_FAILURE);
     }
 
-    input_string.resize(input_size, '\0'); // Резервируем строку нужного размера
-    bytes_read = read(pipeFd, &input_string[0], input_size); // Чтение самой строки
+    input_string.resize(input_size, '\0'); // инициализируем строку нужного размера
+    bytes_read = read(pipeFd, &input_string[0], input_size); // и записываем туда полученную строку, указывая на её начало
     if (bytes_read == -1) {
         perror("read error");
         exit(EXIT_FAILURE);
@@ -54,15 +57,15 @@ ssize_t readStringFromPipe(int pipeFd, std::string &input_string) {
     return bytes_read;
 }
 
-// Запись строки в pipe
+// запись строки в pipe
 ssize_t writeStringToPipe(int pipeFd, const std::string &output_string) {
+    // выкидывем строку в поток, откуда она попадает в нужный файл 
     ssize_t bytes_written = write(pipeFd, output_string.c_str(), output_string.size());
     if (bytes_written == -1) {
         perror("write error");
         exit(EXIT_FAILURE);
     }
 
-    // Добавление новой строки
     bytes_written = write(pipeFd, "\n", 1);
     if (bytes_written == -1) {
         perror("write error");

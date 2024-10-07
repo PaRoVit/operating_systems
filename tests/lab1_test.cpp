@@ -1,7 +1,36 @@
 #include <gtest/gtest.h>
 #include <fstream>
 #include <string>
-#include "parent.hpp"
+#include <parent.hpp>
+#include <cstdio>
+
+// export CHILD1_PATH="/home/pvrozhkov/operating_system/operating_systems/build/lab1/child1"
+// export CHILD2_PATH="/home/pvrozhkov/operating_system/operating_systems/build/lab1/child2"
+
+class TempFile {
+public:
+    // конструктор временного файла
+    TempFile(const std::string& filename) : filename_(filename) {
+        std::ofstream file(filename_);
+        if (!file) {
+            throw std::runtime_error("Failed to create temporary file: " + filename_);
+        }
+    }
+
+    // возврат имени файла
+    const std::string& getFilename() const {
+        return filename_;
+    }
+
+    // деструктор
+    ~TempFile() {
+        std::remove(filename_.c_str());
+    }
+
+private:
+    std::string filename_;
+};
+
 
 std::string readFileContent(const std::string& filename) {
     std::ifstream file(filename); // открываем файл и читаем его содержимое
@@ -12,36 +41,53 @@ std::string readFileContent(const std::string& filename) {
 
 TEST(ParentProcessTest, CheckStringsInFiles) {
     // файлы в которые будет всё записано 
-    std::string filename1 = "/home/pvrozhkov/operating_system/operating_systems/build/tests/out1.txt";
-    std::string filename2 = "/home/pvrozhkov/operating_system/operating_systems/build/tests/out2.txt";
+    TempFile filename1("out1.txt");
+    TempFile filename2("out2.txt");
     
     // пути к дочерним 
-    const char* pathToChild1 = "/home/pvrozhkov/operating_system/operating_systems/build/lab1/child1";
-    const char* pathToChild2 = "/home/pvrozhkov/operating_system/operating_systems/build/lab1/child2";
+    const char* pathToChild1 = std::getenv("CHILD1_PATH");
+    const char* pathToChild2 = std::getenv("CHILD2_PATH");
+
+    // проверка наличия пути
+    ASSERT_NE(pathToChild1, nullptr) << "CHILD1_PATH environment variable is not set";
+    ASSERT_NE(pathToChild2, nullptr) << "CHILD2_PATH environment variable is not set";
 
     // входной поток с тестами 
     std::istringstream input_stream("Hello\nWorld\nTest\n123\n");
 
-    // подмена потоков
-    std::streambuf* cinbuf = std::cin.rdbuf(); 
-    std::cin.rdbuf(input_stream.rdbuf());
-
     ParentProcess(pathToChild1, pathToChild2, input_stream);
 
-    // возвращаем исходный поток
-    std::cin.rdbuf(cinbuf);
 
-    std::string content1 = readFileContent(filename1);
-    std::string content2 = readFileContent(filename2);
+    std::string content1 = readFileContent(filename1.getFilename());
+    std::string content2 = readFileContent(filename2.getFilename());
 
     // сверка того что в файле и что мы ожидаем
     EXPECT_EQ(content1, "Hll\nTst\n"); 
-
     EXPECT_EQ(content2, "Wrld\n123\n"); 
 }
 
-// Очистка файлов после теста
-TEST(ParentProcessTest, CleanupFiles) {
-    std::remove("/home/pvrozhkov/operating_system/operating_systems/build/tests/out2.txt");
-    std::remove("/home/pvrozhkov/operating_system/operating_systems/build/tests/out1.txt");
+TEST(ParentProcessTest, EmptyString) {
+    // файлы в которые будет всё записано 
+    TempFile filename1("out1.txt");
+    TempFile filename2("out2.txt");
+    
+    // пути к дочерним 
+    const char* pathToChild1 = std::getenv("CHILD1_PATH");
+    const char* pathToChild2 = std::getenv("CHILD2_PATH");
+
+    ASSERT_NE(pathToChild1, nullptr) << "CHILD1_PATH environment variable is not set";
+    ASSERT_NE(pathToChild2, nullptr) << "CHILD2_PATH environment variable is not set";
+
+    // входной поток с тестами 
+    std::istringstream input_stream("");
+
+    ParentProcess(pathToChild1, pathToChild2, input_stream);
+
+
+    std::string content1 = readFileContent(filename1.getFilename());
+    std::string content2 = readFileContent(filename2.getFilename());
+
+    // сверка того что в файле и что мы ожидаем
+    EXPECT_EQ(content1, ""); 
+    EXPECT_EQ(content2, "");
 }
