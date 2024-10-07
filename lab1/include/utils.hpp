@@ -8,7 +8,13 @@
 #include <cstdlib>
 #include <unistd.h>
 #include <ext/stdio_filebuf.h>
-#include <fcntl.h> 
+#include <fcntl.h>
+
+std::string removeVowels(const std::string& input);
+
+ssize_t readStringFromPipe(int pipeFd, std::string &input_string);
+
+ssize_t writeStringToPipe(int pipeFd, const std::string &output_string);
 
 enum PipeEnd {
     READ_END,

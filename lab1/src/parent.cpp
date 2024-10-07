@@ -1,4 +1,4 @@
-#include <../include/parent.hpp>
+#include <parent.hpp>
 
 // функция для чтения строки по символьно
 std::string pull_string_from_file() {
