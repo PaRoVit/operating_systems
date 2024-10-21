@@ -5,8 +5,9 @@
 #include <vector>
 #include <sys/time.h>
 #include <algorithm>
+#include <pthread.h>
 
-const int AMOUNT_OF_ELEMENTS = 10000;
+constexpr int AMOUNT_OF_ELEMENTS = 10000;
 
 struct ThreadArguments {
     int* array;
@@ -15,8 +16,8 @@ struct ThreadArguments {
 };
 
 void oddEvenSort(int arr[], int start, int end);
-void thread_function(ThreadArguments* args);
-void createAndRunThreads(std::vector<std::thread>& threads, std::vector<ThreadArguments>& thread_args, int* array, int arraySize, int threadsAmount);
+void* thread_function(void* args);
+void createAndRunThreads(std::vector<pthread_t>& threads, std::vector<ThreadArguments>& thread_args, int* array, int arraySize, int threadsAmount);
 void creatArray(int* array, int size);
-void waitThreads(std::vector<std::thread>& threads);
+void waitThreads(std::vector<pthread_t>& threads);
 std::vector<int> run(int threadsAmount);

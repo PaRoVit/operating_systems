@@ -18,25 +18,11 @@ TEST(SortTest, HandlesTwoThreadsPerformance) {
 }
 
 TEST(SortTest, CorrectlySortedArray1) {
-    int threadsAmount = 1;
+    int threadsAmount = 8;
 
-    // Выполняем сортировку с четырьмя потоками
-    std::vector<int> sortedArray = run(threadsAmount);
-
-    // Проверяем, что каждый элемент меньше или равен следующему
-    for (size_t i = 0; i < sortedArray.size() - 1; ++i) {
-        EXPECT_LE(sortedArray[i], sortedArray[i + 1]);
+    for (int thread = 1; thread <= threadsAmount; thread++) {
+        std::vector<int> sortedArray = run(thread);
+        EXPECT_TRUE(std::is_sorted(sortedArray.begin(), sortedArray.end()));
     }
 }
 
-TEST(SortTest, CorrectlySortedArray2) {
-    int threadsAmount = 3;
-
-    // Выполняем сортировку с четырьмя потоками
-    std::vector<int> sortedArray = run(threadsAmount);
-
-    // Проверяем, что каждый элемент меньше или равен следующему
-    for (size_t i = 0; i < sortedArray.size() - 1; ++i) {
-        EXPECT_LE(sortedArray[i], sortedArray[i + 1]);
-    }
-}
