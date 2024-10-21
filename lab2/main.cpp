@@ -10,6 +10,12 @@ int main(int argc, char* argv[]) {
     }
 
     int threadsAmount = std::stoi(argv[1]);
-    run(threadsAmount);
+    
+    if (threadsAmount <= 0) {
+        std::cout << "Invalid starting parameters, program was not launched\n";
+        return 1;
+    }
+
+    RunMain(threadsAmount, AMOUNT_OF_ELEMENTS);
     return 0;
 }

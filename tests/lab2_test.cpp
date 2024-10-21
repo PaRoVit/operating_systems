@@ -2,15 +2,15 @@
 #include <sort.hpp>
 
 TEST(SortTest, HandlesTwoThreadsPerformance) {
-    int threadsAmount1 = 1;
+    constexpr int threadsAmount1 = 1;
     auto start1 = std::chrono::high_resolution_clock::now();
-    run(threadsAmount1);
+    RunMain(threadsAmount1, AMOUNT_OF_ELEMENTS);
     auto end1 = std::chrono::high_resolution_clock::now();
     double execution_time1 = std::chrono::duration<double, std::milli>(end1 - start1).count();
 
-    int threadsAmount2 = 2;
+    constexpr int threadsAmount2 = 2;
     auto start2 = std::chrono::high_resolution_clock::now();
-    run(threadsAmount2);
+    RunMain(threadsAmount2, AMOUNT_OF_ELEMENTS);
     auto end2 = std::chrono::high_resolution_clock::now();
     double execution_time2 = std::chrono::duration<double, std::milli>(end2 - start2).count();
 
@@ -18,10 +18,10 @@ TEST(SortTest, HandlesTwoThreadsPerformance) {
 }
 
 TEST(SortTest, CorrectlySortedArray1) {
-    int threadsAmount = 8;
+    constexpr int threadsAmount = 8;
 
     for (int thread = 1; thread <= threadsAmount; thread++) {
-        std::vector<int> sortedArray = run(thread);
+        std::vector<int> sortedArray = RunMain(thread, AMOUNT_OF_ELEMENTS);
         EXPECT_TRUE(std::is_sorted(sortedArray.begin(), sortedArray.end()));
     }
 }

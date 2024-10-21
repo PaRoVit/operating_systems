@@ -1,6 +1,6 @@
 #include <sort.hpp>
 
-void oddEvenSort(int arr[], int start, int end) {
+void OddEvenSort(int arr[], int start, int end) {
     bool isSorted = false; 
 
     while (!isSorted) {
@@ -25,13 +25,13 @@ void oddEvenSort(int arr[], int start, int end) {
 }
 
 // Функция, которая будет выполняться в потоке (для pthread)
-void* thread_function(void* args) {
+void* ThreadFunction(void* args) {
     ThreadArguments* threadArgs = (ThreadArguments*) args;
-    oddEvenSort(threadArgs->array, threadArgs->start, threadArgs->end);
+    OddEvenSort(threadArgs->array, threadArgs->start, threadArgs->end);
     return nullptr;
 }
 
-void createAndRunThreads(std::vector<pthread_t>& threads, std::vector<ThreadArguments>& thread_args, int* array, int arraySize, int threadsAmount) {
+void CreateAndRunThreads(std::vector<pthread_t>& threads, std::vector<ThreadArguments>& thread_args, int* array, int arraySize, int threadsAmount) {
     int pieceSize = arraySize / threadsAmount;
     int left = arraySize % threadsAmount;
 
@@ -49,44 +49,43 @@ void createAndRunThreads(std::vector<pthread_t>& threads, std::vector<ThreadArgu
         thread_args[iteration].end = endIndex;
 
         // Создание потоков с использованием pthread_create
-        pthread_create(&threads[iteration], nullptr, thread_function, &thread_args[iteration]);
+        pthread_create(&threads[iteration], nullptr, ThreadFunction, &thread_args[iteration]);
 
         startIndex = endIndex + 1;
         endIndex = startIndex + pieceSize - 1;
     }
 }
 
-void creatArray(int* array, int size) {
+void CreatArray(int* array, int size) {
     for (int i = 0; i < size; i++) {
         array[i] = size - i;
     }
 }
 
-void waitThreads(std::vector<pthread_t>& threads) {
+void WaitThreads(std::vector<pthread_t>& threads) {
     for (auto& thread : threads) {
         // Ожидание завершения каждого потока с использованием pthread_join
         pthread_join(thread, nullptr);
     }
 }
 
-std::vector<int> run(int threadsAmount) {
+std::vector<int> RunMain(int threadsAmount, int arraySize) {
 
-    int ArrayForSort[AMOUNT_OF_ELEMENTS];
-    int arraySize = sizeof(ArrayForSort) / sizeof(ArrayForSort[0]);
+    std::vector<int> ArrayForSort(AMOUNT_OF_ELEMENTS);
 
     // Заполнение массива
-    creatArray(ArrayForSort, arraySize);
+    CreatArray(ArrayForSort.data(), arraySize);
 
     std::vector<pthread_t> threads(threadsAmount);
     std::vector<ThreadArguments> thread_args(threadsAmount);
 
-    createAndRunThreads(threads, thread_args, ArrayForSort, arraySize, threadsAmount);
+    CreateAndRunThreads(threads, thread_args, ArrayForSort.data(), arraySize, threadsAmount);
 
-    waitThreads(threads);
+    WaitThreads(threads);
 
     // Финальная сортировка всего массива
-    oddEvenSort(ArrayForSort, 0, arraySize - 1);
+    OddEvenSort(ArrayForSort.data(), 0, arraySize - 1);
 
-    return std::vector<int>(ArrayForSort, ArrayForSort + arraySize);
+    return ArrayForSort;
 
 }

@@ -15,9 +15,9 @@ struct ThreadArguments {
     int end;
 };
 
-void oddEvenSort(int arr[], int start, int end);
-void* thread_function(void* args);
-void createAndRunThreads(std::vector<pthread_t>& threads, std::vector<ThreadArguments>& thread_args, int* array, int arraySize, int threadsAmount);
-void creatArray(int* array, int size);
-void waitThreads(std::vector<pthread_t>& threads);
-std::vector<int> run(int threadsAmount);
+void OddEvenSort(int arr[], int start, int end);
+void* ThreadFunction(void* args);
+void CreateAndRunThreads(std::vector<pthread_t>& threads, std::vector<ThreadArguments>& thread_args, int* array, int arraySize, int threadsAmount);
+void CreatArray(int* array, int size);
+void WaitThreads(std::vector<pthread_t>& threads);
+std::vector<int> RunMain(int threadsAmount, int arraySize);
