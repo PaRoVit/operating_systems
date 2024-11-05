@@ -93,8 +93,8 @@ void ProcessChild(const char *semaphoreName, const char* mmapFilename){
     std::string inputString;
     for (int index = 0; index < size; ++index) {
         if (map[index] == '\n') { // Если встречен символ новой строки
-            std::string reversed_string = removeVowels(inputString); // Переворот строки
-            std::cout << reversed_string << std::endl; // Вывод перевернутой строки
+            std::string reversed_string = removeVowels(inputString); 
+            std::cout << reversed_string << std::endl; 
             inputString.clear(); // Очистка строки
         } else {
             inputString += map[index]; // Добавление символа к строке
