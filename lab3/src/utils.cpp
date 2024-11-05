@@ -1,28 +1,41 @@
 #include <utils.hpp>
 
-// создание дочернего процесса
-pid_t CreateChild(){
-    if(pid_t pid = fork(); pid >= 0) {
-        return pid;
-    }
-    std::perror("Couldn't create child.");
-    exit(EXIT_FAILURE);   
-}
-
-// создание пайпа
-void CreatePipe(int pipeFd[2]){
-    if( pipe(pipeFd) < 0 ) {
-        std::perror("Couldn't create pipe.");
+sem_t* CreateSemaphore(const char *name, int value) {
+    sem_t *semptr = sem_open(name, O_CREAT, 0777, value);
+    if (semptr == SEM_FAILED){
+        perror("Couldn't open the semaphore");
         exit(EXIT_FAILURE);
     }
+    return semptr;   
 }
 
-// запуск программы по её пути
-void Exec(const char * pathToChild){
-    if (execl(pathToChild, pathToChild, nullptr) == -1) {
-        perror("Failed to exec.");
+int CreateShm(const char* name) {
+    int fd = shm_open(name, O_CREAT | O_RDWR, 0777);
+    if (fd == -1) {
+        std::cerr << "Failed shm_open\n";
+        exit(-1);
+    }
+    ftruncate(fd, 1024);
+    return fd;
+}
+
+char* MapSharedMemory(const int size, int fd) {
+    char *memptr = (char*)mmap(nullptr, size, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
+    if (memptr == MAP_FAILED) {
+        perror("Error with file mapping");
         exit(EXIT_FAILURE);
     }
+    return memptr;
+}
+
+int CreateFork() {
+    int pid;
+    pid = fork();
+    if (pid == -1) {
+        std::cerr << "Failed fork()\n";
+        exit(-2);
+    }
+    return pid;
 }
 
 // удаление гласных
@@ -37,50 +50,60 @@ std::string removeVowels(const std::string& input) {
     return result;
 }
 
-// чтение строки из пайпа
-ssize_t readStringFromPipe(int pipeFd, std::string &input_string) {
-    int input_size;
-    // получаем на вход рамер входной строки, и если норм то идём дальше
-    ssize_t bytes_read = read(pipeFd, &input_size, sizeof(int)); 
-    if (bytes_read == -1) {
-        perror("read error");
-        exit(EXIT_FAILURE);
+void ErrorChecking(int result, const char* error) {
+    if (result == -1) { // Если результат ошибки
+        std::cerr << error << ": " << strerror(errno) << std::endl; // Вывод сообщения об ошибке
+        exit(EXIT_FAILURE); // Завершение программы с ошибкой
     }
-
-    input_string.resize(input_size, '\0'); // инициализируем строку нужного размера
-    bytes_read = read(pipeFd, &input_string[0], input_size); // и записываем туда полученную строку, указывая на её начало
-    if (bytes_read == -1) {
-        perror("read error");
-        exit(EXIT_FAILURE);
-    }
-
-    return bytes_read;
 }
 
-// запись строки в pipe
-ssize_t writeStringToPipe(int pipeFd, const std::string &output_string) {
-    // выкидывем строку в поток, откуда она попадает в нужный файл 
-    ssize_t bytes_written = write(pipeFd, output_string.c_str(), output_string.size());
-    if (bytes_written == -1) {
-        perror("write error");
-        exit(EXIT_FAILURE);
-    }
-
-    bytes_written = write(pipeFd, "\n", 1);
-    if (bytes_written == -1) {
-        perror("write error");
-        exit(EXIT_FAILURE);
-    }
-
-    return bytes_written;
+int GetSemaphoreValue(sem_t* semaphore) {
+    int value; // Переменная для хранения значения семафора
+    sem_getvalue(semaphore, &value); // Получение текущего значения семафора
+    return value; // Возвращение значения
 }
 
-void processChild() {
-    std::string input_string;
-
-    // Чтение строк из потока, пока они поступают
-    while (readStringFromPipe(STDIN_FILENO, input_string) > 0) {
-        std::string result_string = removeVowels(input_string); // удаление гласных
-        writeStringToPipe(STDOUT_FILENO, result_string);        // запись результата
+void SetSemaphoreValue(sem_t* semaphore, int value) {
+    // Увеличение значения семафора до указанного
+    while (GetSemaphoreValue(semaphore) < value) {
+        sem_post(semaphore); // Увеличение семафора
     }
+    // Уменьшение значения семафора до указанного
+    while (GetSemaphoreValue(semaphore) > value) {
+        sem_wait(semaphore); // Уменьшение семафора
+    }
+}
+
+void ProcessChild(const char *semaphoreName, const char* mmapFilename){
+    sem_t* semaphore = sem_open(semaphoreName, O_RDWR | O_CREAT, 0777);
+    ErrorChecking(semaphore == SEM_FAILED ? -1 : 0, "Semaphore open error");
+    int mmapFile = shm_open(mmapFilename, O_RDWR | O_CREAT, 0777);
+    ErrorChecking(mmapFile, "File open error");
+
+    struct stat buffer; // Структура для получения статуса файла
+    fstat(mmapFile, &buffer); // Получение статуса файла
+    int size = buffer.st_size; // Получение размера области памяти
+
+    char* map = MapSharedMemory(size, mmapFile);
+    if (map == MAP_FAILED) {
+        std::cerr << "Error mapping memory" << std::endl; // Вывод ошибки
+        return; // Завершение программы с ошибкой
+    }
+
+    std::string inputString;
+    for (int index = 0; index < size; ++index) {
+        if (map[index] == '\n') { // Если встречен символ новой строки
+            std::string reversed_string = removeVowels(inputString); // Переворот строки
+            std::cout << reversed_string << std::endl; // Вывод перевернутой строки
+            inputString.clear(); // Очистка строки
+        } else {
+            inputString += map[index]; // Добавление символа к строке
+        }
+    }
+    sem_close(semaphore); // Закрытие семафора
+    sem_unlink(semaphoreName); // Удаление семафора
+    munmap(map, size); // Освобождение области памяти
+    close(mmapFile); // Закрытие дескриптора области памяти
+    
+    return; // Завершение программы успешно
 }

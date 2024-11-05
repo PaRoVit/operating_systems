@@ -1,103 +1,107 @@
 #include <parent.hpp>
 
-// функция для чтения строки по символьно
-std::string pull_string_from_file() {
-    std::string input_string;
-    char input_symbol;
-
-    // читаем символы из ввода до тех пор, пока не встретим символ новой строки
-    while ((input_symbol = getchar()) != '\n') {
-        if (input_symbol == EOF) {
-            // если достигнут конец файла, возвращаем пустую строку
-            return "";
-        }
-        input_string += input_symbol; // добавляем символ к строке
-    }
-
-    return input_string; // возвращаем полученную строку
-}
+// export CHILD1_PATH="/home/pvrozhkov/operating_system/operating_systems/build/lab3/child1"
+// export CHILD2_PATH="/home/pvrozhkov/operating_system/operating_systems/build/lab3/child2"
 
 void ParentProcess(const char * pathToChild1, const char * pathToChild2, std::istream & streamIn){
-    // pipe для передачи от родителя к 1 дочернему
-    int child1[2];
-    CreatePipe(child1);
 
-    // pipe для передачи от родителя к 2 дочернему
-    int child2[2];
-    CreatePipe(child2);
-
+    
     // передадим имена файлов для записи(они сохраняются в build/lab1/outX.txt)
     std::string file1 = "out1.txt";
     std::string file2 = "out2.txt";
     int file1Descr = open(file1.c_str(), O_WRONLY | O_CREAT | O_TRUNC, 0777);
     int file2Descr = open(file2.c_str(), O_WRONLY | O_CREAT | O_TRUNC, 0777);
+    ErrorChecking(file1Descr, "File1 opening error");
+    ErrorChecking(file2Descr, "File2 opening error");
 
+    int firstMmapFile = CreateShm(MMAP_NAME1);
+    int secondMmapFile = CreateShm(MMAP_NAME2);
+    ErrorChecking(firstMmapFile, "Memory area1 opening error");
+    ErrorChecking(secondMmapFile, "Memory area2 opening error");
 
-    // создаём дочерний процесс 1
-    pid_t pid1 = CreateChild();
-    if (pid1 == 0){
-        close(child1[WRITE_END]);
-        close(child2[READ_END]);
-        close(child2[WRITE_END]);
+    sem_unlink(SEM_NAME);
+    sem_t* semaphore = CreateSemaphore(SEM_NAME, 2);
+    ErrorChecking(semaphore == SEM_FAILED ? -1 : 0, "Semaphore open error");
 
-        // перенаправляем потоки
-        if (dup2(child1[READ_END], STDIN_FILENO) == -1){
-            perror("dup2 error");
-            exit(EXIT_FAILURE);
+    pid_t firstProcessID = CreateFork();
+    ErrorChecking(firstProcessID, "Fork1 error");
+    if (firstProcessID == 0) {
+        pid_t secondProcessID = CreateFork();
+        ErrorChecking(secondProcessID, "Fork2 error");
+
+        if (secondProcessID == 0){
+            dup2(file2Descr, STDOUT_FILENO);
+            execl(pathToChild2, SEM_NAME, MMAP_NAME2, nullptr);
+        }else {
+            dup2(file1Descr, STDOUT_FILENO);
+            execl(pathToChild1, SEM_NAME, MMAP_NAME1, nullptr);
         }
-        if (dup2(file1Descr, STDOUT_FILENO) == -1){
-            perror("dup2 error file1");
-            exit(EXIT_FAILURE);
-        }
-        close(file1Descr);
-        // выполнение первого дочернего процесса
-        Exec(pathToChild1);
-    } else {
-        // создаём 2 дочерний процесс и всё тоде самое
-        pid_t pid2 = CreateChild();
-        if (pid2 == 0){
-            close(child2[WRITE_END]);
-            close(child1[READ_END]);
-            close(child1[WRITE_END]);
+    }else { // parent
+        if (GetSemaphoreValue(semaphore) == 2) {
+            char* firstMmap = MapSharedMemory(getpagesize(), firstMmapFile);
+            char* secondMmap = MapSharedMemory(getpagesize(), secondMmapFile);
 
-            if (dup2(child2[READ_END], STDIN_FILENO) == -1){
-                perror("dup2 error");
-                exit(EXIT_FAILURE);
-            }
-            if (dup2(file2Descr, STDOUT_FILENO) == -1){
-                perror("dup2 error file2");
-                exit(EXIT_FAILURE);
-            }
-            close(file2Descr);
-            Exec(pathToChild2);
-        } else {
-            // дальше отправим каждую строку в нужный для неё дочерний процесс
-            close(child1[READ_END]);
-            close(child2[READ_END]);
-
-            std::string string_from_file; 
-            int string_sequence_number = 0;
-            // читаем строки на вход
-            while (std::getline(streamIn, string_from_file))
-            {
-                int length = string_from_file.size(); //размеры входной строки, которые потом отправим в доч.процесс
-                int pipe_write_end = (string_sequence_number % 2 == 0) ? child1[WRITE_END] : child2[WRITE_END]; // если true то присваиваем child1
-                // закидываем в поток сначала размеры строки, потом саму строку
-                write(pipe_write_end, &length, sizeof(length));
-                write(pipe_write_end, string_from_file.c_str(), length);
-                string_sequence_number++;
+            if (firstMmap == MAP_FAILED || secondMmap == MAP_FAILED) {
+                std::cerr << "Error creating memory maps\n"; 
+                return ; 
             }
 
-            // закрываем остатки
-            close(child1[WRITE_END]);
-            close(child2[WRITE_END]);
-            close(file1Descr);
-            close(file2Descr);
+            int firstPosition = 0; // Индекс для первого процесса
+            int secondPosition = 0; // Индекс для второго процесса
+            int firstLength = 0; // Длина первой области памяти
+            int secondLength = 0; // Длина второй области памяти
+            int counterStrings = 1; // Счетчик строк
 
-            // ожидаем закрытие дочерних процессов
-            waitpid(pid1, nullptr, 0);
-            waitpid(pid2, nullptr, 0);
+            std::string inputString;
+            while (std::getline(streamIn, inputString)){
+                int string_length = inputString.length();
+
+                if (counterStrings % 2 != 0) {
+                    firstLength += string_length + 1; // Увеличение длины первой области
+                    ftruncate(firstMmapFile, firstLength); // Установка новой длины первой области
+
+                    // Запись символов строки в первую область
+                    for (char ch : inputString) {
+                        firstMmap[firstPosition++] = ch; // Запись символа
+                    }
+                    firstMmap[firstPosition++] = '\n'; // Добавление символа новой строки
+                } else { // Если номер строки четный
+                    secondLength += string_length + 1; // Увеличение длины второй области
+                    ftruncate(secondMmapFile, secondLength); // Установка новой длины второй области
+
+                    // Запись символов строки во вторую область
+                    for (char ch : inputString) {
+                        secondMmap[secondPosition++] = ch; // Запись символа
+                    }
+                    secondMmap[secondPosition++] = '\n'; // Добавление символа новой строки
+                }
+                counterStrings++;
+            }
+            SetSemaphoreValue(semaphore, 1);
+
+            struct stat firstBuffer, secondBuffer;
+            fstat(firstMmapFile, &firstBuffer);
+            fstat(secondMmapFile, &secondBuffer);
+
+            int firstMmapSize = firstBuffer.st_size; // Получение размера первой области
+            int secondMmapSize = secondBuffer.st_size; // Получение размера второй области
+            
+            int status;
+            waitpid(-1, &status, 0);
+            waitpid(-1, &status, 0);
+
+            munmap(firstMmap, firstMmapSize); // Освобождение первой области памяти
+            munmap(secondMmap, secondMmapSize); // Освобождение второй области памяти
         }
+        close(file1Descr); // Закрытие первого файла
+        close(file2Descr); // Закрытие второго файла
+        close(firstMmapFile); // Закрытие первого дескриптора области памяти
+        close(secondMmapFile); // Закрытие второго дескриптора области памяти
     }
+    sem_close(semaphore); // Закрытие семафора
+    sem_destroy(semaphore); // Удаление семафора
+
+
+    return;
 
 }
