@@ -1,28 +1,33 @@
 #pragma once
 
-#include <sstream>
-#include <algorithm>
-#include <sys/wait.h>
 #include <iostream>
+#include <algorithm>
+#include <fstream>
 #include <string>
-#include <cstdlib>
 #include <unistd.h>
-#include <ext/stdio_filebuf.h>
+#include <sys/wait.h>
+#include <sys/stat.h>
 #include <fcntl.h>
+#include <string.h>
+#include <sys/mman.h>
+#include <sys/stat.h>     
+#include <fcntl.h>
+#include <unistd.h>
+#include <semaphore.h>
 
 std::string removeVowels(const std::string& input);
 
-ssize_t readStringFromPipe(int pipeFd, std::string &input_string);
+sem_t* CreateSemaphore(const char *name, int value);
+int CreateShm(const char* name);
+char* MapSharedMemory(const int size, int fd);
+int CreateFork();
+void ErrorChecking(int result, const char* error);
+int GetSemaphoreValue(sem_t* semaphore);
+void SetSemaphoreValue(sem_t* semaphore, int value);
+void ProcessChild(const char *semaphoreName, const char* mmapFilename);
 
-ssize_t writeStringToPipe(int pipeFd, const std::string &output_string);
 
-void processChild();
+constexpr const char *SEM_NAME = "SEM";
 
-enum PipeEnd {
-    READ_END,
-    WRITE_END
-};
-
-void                CreatePipe(int pipeFd[2]);
-pid_t               CreateChild();
-void                Exec(const char * pathToChild);
+constexpr const char* MMAP_NAME1 = "/shm1";
+constexpr const char* MMAP_NAME2 = "/shm2";

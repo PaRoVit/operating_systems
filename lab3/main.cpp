@@ -22,5 +22,5 @@ int main(void) {
     exit(EXIT_SUCCESS);
 }
 
-// export CHILD1_PATH="/home/pvrozhkov/operating_system/operating_systems/build/lab1/child1"
-// export CHILD2_PATH="/home/pvrozhkov/operating_system/operating_systems/build/lab1/child2"
+// export CHILD1_PATH="/home/pvrozhkov/operating_system/operating_systems/build/lab3/child1"
+// export CHILD2_PATH="/home/pvrozhkov/operating_system/operating_systems/build/lab3/child2"

@@ -1,14 +1,15 @@
-#include <iostream>
-#include <string>
-#include <unistd.h> 
-#include <algorithm> 
-#include <vector>
 #include <utils.hpp>
 
 
 
 
-int main() {
-    processChild();
-    return 0;
+int main(int argc, char* argv[]) {
+    // std::cerr << argv[0]<< ' '<< argv[1] << "\n";
+    if (argc < 2) {
+        std::cerr << "Wrong argc in child1\n";
+        exit(-6);
+    }
+    const char* semaphoreName = argv[0];
+    const char* mmapFilename = argv[1];
+    ProcessChild(semaphoreName, mmapFilename);
 }
