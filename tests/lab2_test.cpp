@@ -8,7 +8,7 @@ TEST(SortTest, HandlesTwoThreadsPerformance) {
     auto end1 = std::chrono::high_resolution_clock::now();
     double execution_time1 = std::chrono::duration<double, std::milli>(end1 - start1).count();
 
-    constexpr int threadsAmount2 = 2;
+    constexpr int threadsAmount2 = 8;
     auto start2 = std::chrono::high_resolution_clock::now();
     RunMain(threadsAmount2, AMOUNT_OF_ELEMENTS);
     auto end2 = std::chrono::high_resolution_clock::now();
