@@ -17,7 +17,7 @@ void ParentProcess(const char * pathToChild1, const char * pathToChild2, std::is
     ErrorChecking(secondMmapFile, "Memory area2 opening error");
 
     sem_unlink(SEM_NAME);
-    sem_t* semaphore = CreateSemaphore(SEM_NAME, 2);
+    sem_t* semaphore = CreateSemaphore(SEM_NAME, 0);
     ErrorChecking(semaphore == SEM_FAILED ? -1 : 0, "Semaphore open error");
 
     pid_t firstProcessID = CreateFork();
@@ -69,8 +69,8 @@ void ParentProcess(const char * pathToChild1, const char * pathToChild2, std::is
         munmap(firstMmap, firstLength);
         munmap(secondMmap, secondLength);
         
-        shm_unlink(MMAP_NAME1); // когда эти строки есть, то в выходные файлы ничего не пишет
-        shm_unlink(MMAP_NAME2); // а когда их нет, пишет то, что я вводил в предыдущий раз
+        shm_unlink(MMAP_NAME1); 
+        shm_unlink(MMAP_NAME2); 
 
         close(file1Descr);
         close(file2Descr);
