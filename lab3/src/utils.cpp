@@ -75,9 +75,17 @@ void SetSemaphoreValue(sem_t* semaphore, int value) {
 }
 
 void ProcessChild(const char *semaphoreName, const char* mmapFilename){
-    sem_t* semaphore = sem_open(semaphoreName, O_RDWR | O_CREAT, 0777);
+    // std::cerr << "Child process started with semaphore: " << semaphoreName
+    //           << " and mmap filename: " << mmapFilename << std::endl;
+
+    sem_t* semaphore = sem_open(semaphoreName, O_RDWR);
     ErrorChecking(semaphore == SEM_FAILED ? -1 : 0, "Semaphore open error");
-    int mmapFile = shm_open(mmapFilename, O_RDWR | O_CREAT, 0777);
+    if (sem_wait(semaphore) != 0) {
+        perror("sem_wait error in child process");
+        exit(EXIT_FAILURE);
+    }
+
+    int mmapFile = shm_open(mmapFilename, O_RDWR, 0777);
     ErrorChecking(mmapFile, "File open error");
 
     struct stat buffer; // Структура для получения статуса файла
@@ -100,8 +108,8 @@ void ProcessChild(const char *semaphoreName, const char* mmapFilename){
             inputString += map[index]; // Добавление символа к строке
         }
     }
+    sem_post(semaphore);
     sem_close(semaphore); // Закрытие семафора
-    sem_unlink(semaphoreName); // Удаление семафора
     munmap(map, size); // Освобождение области памяти
     close(mmapFile); // Закрытие дескриптора области памяти
     
