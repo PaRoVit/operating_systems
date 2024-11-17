@@ -24,10 +24,10 @@ int CreateFork();
 void ErrorChecking(int result, const char* error);
 int GetSemaphoreValue(sem_t* semaphore);
 void SetSemaphoreValue(sem_t* semaphore, int value);
-void ProcessChild(const char *semaphoreName, const char* mmapFilename);
+void ProcessChild(const char *semaphoreParentName, const char *semaphoreChildName, const char* mmapFilename);
 
-
-constexpr const char *SEM_NAME = "SEM";
+constexpr const char *SEM_PARENT_NAME = "SEM1";
+constexpr const char *SEM_CHILD_NAME = "SEM2";
 
 constexpr const char* MMAP_NAME1 = "/shm1";
 constexpr const char* MMAP_NAME2 = "/shm2";

@@ -74,44 +74,31 @@ void SetSemaphoreValue(sem_t* semaphore, int value) {
     }
 }
 
-void ProcessChild(const char *semaphoreName, const char* mmapFilename){
-    // std::cerr << "Child process started with semaphore: " << semaphoreName
-    //           << " and mmap filename: " << mmapFilename << std::endl;
-
-    sem_t* semaphore = sem_open(semaphoreName, O_RDWR);
-    ErrorChecking(semaphore == SEM_FAILED ? -1 : 0, "Semaphore open error");
-    if (sem_wait(semaphore) != 0) {
-        perror("sem_wait error in child process");
-        exit(EXIT_FAILURE);
-    }
+void ProcessChild(const char *semaphoreParentName, const char *semaphoreChildName, const char* mmapFilename){
+    sem_t* semParent = sem_open(semaphoreParentName, O_RDWR);
+    sem_t* semChild = sem_open(semaphoreChildName, O_RDWR);
+    ErrorChecking(semParent == SEM_FAILED || semChild == SEM_FAILED ? -1 : 0, "Semaphore open error");
 
     int mmapFile = shm_open(mmapFilename, O_RDWR, 0777);
     ErrorChecking(mmapFile, "File open error");
 
-    struct stat buffer; // Структура для получения статуса файла
-    fstat(mmapFile, &buffer); // Получение статуса файла
-    int size = buffer.st_size; // Получение размера области памяти
+    char* mmap = MapSharedMemory(getpagesize(), mmapFile);
+    ErrorChecking(mmap == MAP_FAILED ? -1 : 0, "Error mapping memory");
 
-    char* map = MapSharedMemory(size, mmapFile);
-    if (map == MAP_FAILED) {
-        std::cerr << "Error mapping memory" << std::endl; // Вывод ошибки
-        return; // Завершение программы с ошибкой
-    }
-
-    std::string inputString;
-    for (int index = 0; index < size; ++index) {
-        if (map[index] == '\n') { // Если встречен символ новой строки
-            std::string reversed_string = removeVowels(inputString); 
-            std::cout << reversed_string << std::endl; 
-            inputString.clear(); // Очистка строки
-        } else {
-            inputString += map[index]; // Добавление символа к строке
+    while(true) {
+        sem_wait(semParent); // Ждём сигнала от родительского
+        std::string inputString;
+        for (int i = 0; mmap[i] != '\n'; ++i) { // чтение строки из памяти
+            inputString += mmap[i];
         }
+        if (inputString.empty()) break; // Условие завершения
+        std::string processedString = removeVowels(inputString);
+        std::cout << processedString << std::endl;
+        sem_post(semChild);
     }
-    sem_post(semaphore);
-    sem_close(semaphore); // Закрытие семафора
-    munmap(map, size); // Освобождение области памяти
+
+    sem_close(semParent); // Закрытие семафоров 
+    sem_close(semChild);
+    munmap(mmap, getpagesize()); // Освобождение области памяти
     close(mmapFile); // Закрытие дескриптора области памяти
-    
-    return; // Завершение программы успешно
 }

@@ -16,9 +16,11 @@ void ParentProcess(const char * pathToChild1, const char * pathToChild2, std::is
     ErrorChecking(firstMmapFile, "Memory area1 opening error");
     ErrorChecking(secondMmapFile, "Memory area2 opening error");
 
-    sem_unlink(SEM_NAME);
-    sem_t* semaphore = CreateSemaphore(SEM_NAME, 0);
-    ErrorChecking(semaphore == SEM_FAILED ? -1 : 0, "Semaphore open error");
+    sem_unlink(SEM_PARENT_NAME); // Родитель сигнализирует джочеренему
+    sem_unlink(SEM_CHILD_NAME); // Родитель ждёт завершения обработки
+    sem_t* semParent = CreateSemaphore(SEM_PARENT_NAME, 0);
+    sem_t* semChild = CreateSemaphore(SEM_CHILD_NAME, 0);
+    ErrorChecking(semParent == SEM_FAILED || semChild == SEM_FAILED ? -1 : 0, "Semaphore open error");
 
     pid_t firstProcessID = CreateFork();
     ErrorChecking(firstProcessID, "Fork1 error");
@@ -28,12 +30,12 @@ void ParentProcess(const char * pathToChild1, const char * pathToChild2, std::is
 
         if (secondProcessID == 0) {
             dup2(file2Descr, STDOUT_FILENO);
-            execl(pathToChild2, pathToChild2, SEM_NAME, MMAP_NAME2, nullptr);
+            execl(pathToChild2, pathToChild2, SEM_PARENT_NAME, SEM_CHILD_NAME, MMAP_NAME2, nullptr);
             perror("execl failed for child2");
             exit(EXIT_FAILURE);
         } else {
             dup2(file1Descr, STDOUT_FILENO);
-            execl(pathToChild1, pathToChild1, SEM_NAME, MMAP_NAME1, nullptr);
+            execl(pathToChild1, pathToChild1, SEM_PARENT_NAME, SEM_CHILD_NAME, MMAP_NAME1, nullptr);
             perror("execl failed for child1");
             exit(EXIT_FAILURE);
         }
@@ -42,33 +44,35 @@ void ParentProcess(const char * pathToChild1, const char * pathToChild2, std::is
         char* secondMmap = MapSharedMemory(getpagesize(), secondMmapFile);
         ErrorChecking(firstMmap == MAP_FAILED || secondMmap == MAP_FAILED ? -1 : 0, "Error creating memory maps");
 
-        int firstPosition = 0, secondPosition = 0, firstLength = 0, secondLength = 0;
         int counterStrings = 1;
         std::string inputString;
         while (std::getline(streamIn, inputString)) {
+            char* mmap = (counterStrings % 2 != 0) ? firstMmap : secondMmap; // Выбор памяти в которую писать 
+            int mmapFile = (counterStrings % 2 != 0) ? firstMmapFile : secondMmapFile;
             int string_length = inputString.length();
-            if (counterStrings % 2 != 0) {
-                firstLength += string_length + 1;
-                ftruncate(firstMmapFile, firstLength);
-                for (char ch : inputString) firstMmap[firstPosition++] = ch;
-                firstMmap[firstPosition++] = '\n';
-            } else {
-                secondLength += string_length + 1;
-                ftruncate(secondMmapFile, secondLength);
-                for (char ch : inputString) secondMmap[secondPosition++] = ch;
-                secondMmap[secondPosition++] = '\n';
-            }
+            ftruncate(mmapFile, string_length + 1); // Запись строки в шареную память 
+            memcpy(mmap, inputString.c_str(), string_length);
+            mmap[string_length] = '\n';
+            sem_post(semParent); // Отправка сигнала дочеренему
+            sem_wait(semChild); // ждём результатов от дочеренего 
+
             counterStrings++;
         }
-        SetSemaphoreValue(semaphore, 1);
+
+        ftruncate(firstMmapFile, 1); // при завершении отправляем пустые строки 
+        firstMmap[0] = '\n';
+        sem_post(semParent);
+
+        ftruncate(secondMmapFile, 1);
+        secondMmap[0] = '\n';
+        sem_post(semParent);
 
         int status;
         waitpid(-1, &status, 0);
         waitpid(-1, &status, 0);
 
-        munmap(firstMmap, firstLength);
-        munmap(secondMmap, secondLength);
-        
+        munmap(firstMmap, getpagesize());
+        munmap(secondMmap, getpagesize());
         shm_unlink(MMAP_NAME1); 
         shm_unlink(MMAP_NAME2); 
 
@@ -77,6 +81,8 @@ void ParentProcess(const char * pathToChild1, const char * pathToChild2, std::is
         close(firstMmapFile);
         close(secondMmapFile);
     }
-    sem_close(semaphore);
-    sem_unlink(SEM_NAME);
+    sem_close(semParent);
+    sem_close(semChild);
+    sem_unlink(SEM_PARENT_NAME);
+    sem_unlink(SEM_CHILD_NAME);
 }
