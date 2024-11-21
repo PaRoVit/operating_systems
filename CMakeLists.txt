@@ -1,4 +1,5 @@
 cmake_minimum_required(VERSION 3.20)
+include(FetchContent)
 
 project(OS_LABS C CXX)
 
@@ -12,6 +13,6 @@ endif()
 
 include(FindThreads)
 
-add_subdirectory(lab3)
+add_subdirectory(lab4)
 
-add_subdirectory(tests)
+# add_subdirectory(tests)
