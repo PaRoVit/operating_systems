@@ -7,12 +7,12 @@ int main() {
     // bash: export PATH_TO_LIB2="/home/pvrozhkov/operating_system/operating_systems/build/lab4/liblib2.so"
 
     void* libraryHandle = LoadLibrary(pathToLib1);
-    PrimeCountFunc PrimeCount = (PrimeCountFunc)dlsym(libraryHandle, "PrimeCount");
-    PiFunc Pi = (PiFunc)dlsym(libraryHandle, "Pi");
+    SquareFunc Square = (SquareFunc)dlsym(libraryHandle, "Square");
+    EFunc E = (EFunc)dlsym(libraryHandle, "E");
 
     std::string command;
     while(true) {
-        std::cout << "Enter the command (0 - switch implementation, 1 - PrimeCount, 2 - PiFunc, e - exit): ";
+        std::cout << "Enter the command (0 - switch implementation, 1 - SquareFunc, 2 - EFunc, e - exit): ";
         std::cin >> command;
         if (command == "e") {
             break;
@@ -26,23 +26,23 @@ int main() {
             } else {
                 std::cout << "Invalid library" << std::endl;
             }
-            PrimeCount = (PrimeCountFunc)dlsym(libraryHandle, "PrimeCount");
-            Pi = (PiFunc)dlsym(libraryHandle, "Pi");
+            Square = (SquareFunc)dlsym(libraryHandle, "Square");
+            E = (EFunc)dlsym(libraryHandle, "E");
         } else {
             if (command == "1") {
-                std::cout << "PrimeCount function:" << std::endl;
-                std::cout << "Enter the beginning and the end of the gap:" << std::endl;
-                int A, B;
+                std::cout << "SquareFunc:" << std::endl;
+                std::cout << "Enter sides A and B:" << std::endl;
+                float A, B;
                 std::cin >> A >> B;
-                int result = PrimeCount(A, B);
-                std::cout << "Result of count = " << result << std::endl;
+                float result = Square(A, B);
+                std::cout << "Area = " << result << std::endl;
             } else if (command == "2") {
-                std::cout << "Pi function:" << std::endl;
-                std::cout << "Enter the length of the row:" << std::endl;
-                int K;
-                std::cin >> K;
-                float result2 = Pi(K);
-                std::cout << "Pi = " << result2 <<std::endl;
+                std::cout << "E function:" << std::endl;
+                std::cout << "Enter X:" << std::endl;
+                int x;
+                std::cin >> x;
+                float result2 = E(x);
+                std::cout << "E = " << result2 <<std::endl;
             } else {
                 std::cout << "Invalid command" << std::endl;
             }

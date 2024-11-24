@@ -8,8 +8,8 @@
 extern "C" {
 #endif
 
-int PrimeCount(int A, int B);
-float Pi(int K);
+float Square(float A, float B);
+float E(int x);
 
 #ifdef __cplusplus
 }
