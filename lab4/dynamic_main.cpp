@@ -1,11 +1,6 @@
 #include "utils.hpp"
 
-int main() {
-    const char *pathToLib1 = getenv("PATH_TO_LIB1");
-    const char *pathToLib2 = getenv("PATH_TO_LIB2");
-    // bash: export PATH_TO_LIB1="/home/pvrozhkov/operating_system/operating_systems/build/lab4/liblib1.so"
-    // bash: export PATH_TO_LIB2="/home/pvrozhkov/operating_system/operating_systems/build/lab4/liblib2.so"
-
+void TaskDynamic(const char *pathToLib1, const char *pathToLib2) {
     void* libraryHandle = LoadLibrary(pathToLib1);
     SquareFunc Square = (SquareFunc)dlsym(libraryHandle, "Square");
     EFunc E = (EFunc)dlsym(libraryHandle, "E");
@@ -35,6 +30,10 @@ int main() {
                 float A, B;
                 std::cin >> A >> B;
                 float result = Square(A, B);
+                if (result == -1) {
+                    std::cout << "Invalid value" << std::endl;
+                    continue;
+                }
                 std::cout << "Area = " << result << std::endl;
             } else if (command == "2") {
                 std::cout << "E function:" << std::endl;
@@ -42,6 +41,10 @@ int main() {
                 int x;
                 std::cin >> x;
                 float result2 = E(x);
+                if (result2 == -1) {
+                    std::cout << "Invalid value" << std::endl;
+                    continue;
+                }
                 std::cout << "E = " << result2 <<std::endl;
             } else {
                 std::cout << "Invalid command" << std::endl;
@@ -49,5 +52,15 @@ int main() {
         }
     }
     UnloadLibrary(libraryHandle);
+}
+
+
+int main() {
+    const char *pathToLib1 = getenv("PATH_TO_LIB1");
+    const char *pathToLib2 = getenv("PATH_TO_LIB2");
+    // export PATH_TO_LIB1="/home/pvrozhkov/operating_system/operating_systems/build/lab4/liblib1.so"
+    // export PATH_TO_LIB2="/home/pvrozhkov/operating_system/operating_systems/build/lab4/liblib2.so"
+    TaskDynamic(pathToLib1, pathToLib2);
+    
     return 0;
 }
