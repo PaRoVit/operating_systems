@@ -1,6 +1,9 @@
 #include "implementations.hpp"
 
 extern "C" float Square(float A, float B) {
+    if ((A <= 0) || (B <= 0)){
+        return -1;
+    }
     return A * B * 0.5;
 }
 
@@ -14,7 +17,10 @@ extern "C" float Factorial(int n) {
 }
 
 extern "C" float E(int x) {
-    double e = 0.0;
+    if (x <= 0){
+        return -1;
+    }
+    float e = 0.0;
     for (int n = 0; n <= x; ++n) {
         e += 1.0 / Factorial(n);
     }
