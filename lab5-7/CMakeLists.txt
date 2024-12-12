@@ -1,30 +1,18 @@
-cmake_minimum_required(VERSION 3.8 FATAL_ERROR)
-project(lab57 LANGUAGES CXX)
+set(CMAKE_CXX_STANDARD 17)
 
-add_library(
-    lib_tree SHARED
-    ./include/tree.hpp
-    ./src/tree.cpp
-)
+set(CMAKE_CXX_FLAGS "-lzmq")
 
-add_library(
-    lib_zmq_manage SHARED
-    ./include/zmq_manage.hpp
-    ./src/zmq_manage.cpp 
-)
+set(THREADS_PREFER_PTHREAD_FLAG ON)
+find_package(Threads REQUIRED)
 
+add_compile_options(-Wno-error=deprecated-declarations -Wdeprecated-declarations)
 
-add_executable(api_daemon ./src/api_daemon.cpp)
-target_link_libraries(api_daemon zmq lib_tree lib_zmq_manage)
-target_compile_options(api_daemon PRIVATE -fsanitize=address -g)
-target_link_options(api_daemon PRIVATE -fsanitize=address -g)
+add_executable(client src/client.cpp src/tree.cpp src/zmq_manage.cpp include/tree.hpp include/zmq_manage.hpp)
+target_include_directories(client PRIVATE include)
 
-add_executable(client ./src/client.cpp)
-target_link_libraries(client zmq lib_tree lib_zmq_manage)
-target_compile_options(client PRIVATE -fsanitize=address -g)
-target_link_options(client PRIVATE -fsanitize=address -g)
+add_executable(server src/server.cpp src/tree.cpp src/zmq_manage.cpp include/tree.hpp include/zmq_manage.hpp)
+target_include_directories(server PRIVATE include)
 
-add_executable(server ./src/server.cpp)
-target_link_libraries(server zmq lib_zmq_manage)
-target_compile_options(server PRIVATE -fsanitize=address -g)
-target_link_options(server PRIVATE -fsanitize=address -g)
+target_link_libraries(client PRIVATE zmq)
+
+target_link_libraries(server PRIVATE zmq)

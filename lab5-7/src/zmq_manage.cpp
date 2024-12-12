@@ -1,42 +1,52 @@
 #include "../include/zmq_manage.hpp"
 
 
-std::string get_port_name(const int port) {
-    return "tcp://127.0.0.1:" + std::to_string(port + 1);
+int Bind(zmq::socket_t *socket, int id) {
+    int port = 4040 + id;
+    while(true) {
+        std::string address = "tcp://127.0.0.1:"  + std::to_string(port);
+        try{
+            socket->bind(address);
+            break;
+        } catch(...) {
+            port++;
+        }    
+    }
+    return port;
+}
+void Unbind(zmq::socket_t *socket, int port) {
+    std::string address = "tcp://127.0.0.1:" + std::to_string(port);
+    socket->unbind(address);
 }
 
-bool send_message(zmq::socket_t &socket, const std::string &message_string) {
-    zmq::message_t message(message_string.size());
-    memcpy(message.data(), message_string.c_str(), message_string.size());
-    auto result = socket.send(message, zmq::send_flags::none);
-    return result.has_value(); // Проверяем, был ли отправлен пакет
+void Connect(zmq::socket_t *socket, int port) {
+    std::string address = "tcp://127.0.0.1:" + std::to_string(port);
+    socket->connect(address);
 }
 
-std::string recieve_message(zmq::socket_t &socket) {
-    zmq::message_t message;
-    bool ok = false;
+void Disconnect(zmq::socket_t *socket, int port) {
+    std::string address = "tcp://127.0.0.1:" + std::to_string(port);
+    socket->disconnect(address);
+}
+
+bool SendMessage(zmq::socket_t *socket, const std::string& msg) {
+    zmq::message_t message(msg.size());
+    memcpy(message.data(), msg.c_str(), msg.size());
     try {
-        auto result = socket.recv(message, zmq::recv_flags::none); // Указан флаг приема
-        ok = result.has_value(); // Проверяем успешность получения
-    } catch (...) {
-        ok = false;
+        socket->send(message, zmq::send_flags::none);
+        return true;
+    } catch(...) {
+        return false;
     }
-    std::string recieved_message(static_cast<char*>(message.data()), message.size());
-    if (recieved_message.empty() || !ok) {
-        return "Error: Node is not available";
-    }
-    return recieved_message;
 }
 
-void create_node(int id, int port) {
-    char* arg0 = strdup("./server");
-    char* arg1 = strdup((std::to_string(id)).c_str());
-    char* arg2 = strdup((std::to_string(port)).c_str());
-    char* args[] = {arg0, arg1, arg2, NULL};
-    execv("./server", args);
-
-    // Освобождение памяти на случай ошибки
-    free(arg0);
-    free(arg1);
-    free(arg2);
+std::optional<std::string> ReceiveMessage(zmq::socket_t* socket) {
+    zmq::message_t message;
+    auto result = socket->recv(message, zmq::recv_flags::none);
+    
+    // Проверка успешности получения сообщения
+    if (result && *result > 0) {
+        return std::string(static_cast<char*>(message.data()), message.size());
+    }
+    return std::nullopt; // Если сообщение не получено
 }
