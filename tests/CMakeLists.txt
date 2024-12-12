@@ -16,7 +16,7 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_FLAGS "-lzmq")
 add_compile_options(-Wno-error=deprecated-declarations -Wdeprecated-declarations)
 
-add_executable(lab567_test test.cpp ../lab5-7/src/zmq_manage.cpp ../lab5-7/src/tree.cpp ../lab5-7/src/client.cpp)
+add_executable(lab567_test test.cpp ../lab5-7/src/zmq_manage.cpp ../lab5-7/src/tree.cpp)
 target_link_libraries(lab567_test PRIVATE GTest::GTest)
 target_include_directories(lab567_test PRIVATE ../lab5-7/include)
 

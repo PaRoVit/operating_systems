@@ -53,7 +53,6 @@ int main() {
 
             std::string name;
             std::cin >> name;
-            std::cout<<name<<" client"<<std::endl;  //
 
             if (std::cin.peek() == ' ') { // Save value
                 int value;

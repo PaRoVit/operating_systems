@@ -1,53 +1,72 @@
-#include "gtest/gtest.h"
-#include <cstdlib>
-#include <fstream>
-#include <sstream>
-#include <thread>
+#include <gtest/gtest.h>
 
-// Вспомогательная функция для выполнения команды в клиенте
-std::string execute_client_command(const std::string &command) {
-    std::ostringstream cmd;
-    cmd << "echo \"" << command << "\" | ./client";
-    FILE *pipe = popen(cmd.str().c_str(), "r");
-    if (!pipe) throw std::runtime_error("Failed to run command");
+#include <set>
+#include "../include/tree.hpp"
+#include "../include/zmq_manage.hpp"
+// export PROGRAM_PATH="/home/pablor/OS/lab5-7/operating_systems/build/lab5-7/server"
+
+TEST(Tests, PingTest) {
+    std::string programPath = getenv("PROGRAM_PATH");
+    std::set<int> Nodes;
+    Node task(-1);
+    Nodes.insert(-1);
+    task.Create(1, programPath);
+    Nodes.insert(1);
+
+    std::string ans = task.Send("ping 1", 1);
+    EXPECT_EQ(ans, "Ok: 1");
+
+    ans = task.Send("ping 2", 2);
+    EXPECT_EQ(ans, "Error: Not found");
+
+    task.Kill();
+}
+
+TEST(Tests, ExecTest) {
+    std::string programPath = getenv("PROGRAM_PATH");
+    std::set<int> Nodes;
+    Node task(-1);
+    Nodes.insert(-1);
+    task.Create(1, programPath);
+    Nodes.insert(1);
+
+    std::string ansIn = task.Send("exec 1 my 5", 1);
+    std::string ansOut = task.Send("exec 1 my", 1);
+    EXPECT_EQ(ansOut, "Ok:1: 5");
+
+    task.Kill();
+}
+
+TEST(Tests, FullTest) {
+    std::string programPath = getenv("PROGRAM_PATH");
+    std::string ans;
+    std::set<int> Nodes;
+    Node task(-1);
+    Nodes.insert(-1);
+    task.Create(1, programPath);
+    Nodes.insert(1);
+    task.Send("create 2 -1", 1);
+    Nodes.insert(2);
+    task.Send("create 3 -1", 2);
+    Nodes.insert(3);
     
-    char buffer[128];
-    std::string result;
-    while (fgets(buffer, sizeof(buffer), pipe) != nullptr) {
-        result += buffer;
-    }
-    pclose(pipe);
-    return result;
+    ans = task.Send("ping 1", 1);
+    EXPECT_EQ(ans, "Ok: 1");
+    ans = task.Send("ping 2", 2);
+    EXPECT_EQ(ans, "Ok: 1");
+
+    ans = task.Send("exec 3 qwe", 2);
+    EXPECT_EQ(ans, "Ok:3 not found");
+
+    ans = task.Send("exec 3 qwe 10", 3);
+    EXPECT_EQ(ans, "Ok:3");
+
+    task.Kill();
 }
 
-// Тест команды create
-TEST(ClientApiTest, CreateNodeSuccess) {
-    std::string output = execute_client_command("create 1 -1\nexit\n");
-    EXPECT_NE(output.find("Ok"), std::string::npos) << "Expected successful create command";
-}
-
-// Тест на создание узла с несуществующим родителем
-TEST(ClientApiTest, CreateNodeInvalidParent) {
-    std::string output = execute_client_command("create 2 999\nexit\n");
-    EXPECT_NE(output.find("Error: Parent node not found"), std::string::npos);
-}
-
-// Тест команды ping
-TEST(ClientApiTest, PingNodeSuccess) {
-    execute_client_command("create 3 -1\n");
-    std::string output = execute_client_command("ping 3\nexit\n");
-    EXPECT_NE(output.find("Ok: 1"), std::string::npos) << "Expected successful ping command";
-}
-
-// Тест ping для несуществующего узла
-TEST(ClientApiTest, PingNodeNotFound) {
-    std::string output = execute_client_command("ping 999\nexit\n");
-    EXPECT_NE(output.find("Error: Not found"), std::string::npos);
-}
-
-// Тест команды exec
-TEST(ClientApiTest, ExecCommand) {
-    execute_client_command("create 4 -1\n");
-    std::string output = execute_client_command("exec 4 var_name value\nexit\n");
-    EXPECT_NE(output.find("Ok"), std::string::npos) << "Expected successful exec command";
+int main(int argc, char *argv[]) {
+    std::cout << getenv("PROGRAM_PATH") << std::endl;
+    // bash: export PROGRAM_PATH="/home/kristinab/ubuntu_main/OS_labs/build/lab5-7/server"
+    testing::InitGoogleTest(&argc, argv);
+    return RUN_ALL_TESTS();
 }

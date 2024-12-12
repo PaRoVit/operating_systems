@@ -54,7 +54,6 @@ int main(int argc, char **argv) {
             // Считать оставшуюся часть строки
             std::string name;
             request >> name;
-            std::cout << name << " server" <<std::endl;
 
             if (request.peek() == ' ') { // Save value
                 int value;
