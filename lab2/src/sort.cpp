@@ -1,4 +1,5 @@
 #include <sort.hpp>
+#include <sys/time.h>
 
 void OddEvenSort(int arr[], int start, int end) {
     bool isSorted = false; 
@@ -76,15 +77,25 @@ std::vector<int> RunMain(int threadsAmount, int arraySize) {
     // Заполнение массива
     CreatArray(ArrayForSort.data(), arraySize);
 
+    struct timeval start, end;
+    gettimeofday(&start, NULL); 
     std::vector<pthread_t> threads(threadsAmount);
     std::vector<ThreadArguments> thread_args(threadsAmount);
 
     CreateAndRunThreads(threads, thread_args, ArrayForSort.data(), arraySize, threadsAmount);
 
     WaitThreads(threads);
+    gettimeofday(&end, NULL);
 
     // Финальная сортировка всего массива
     OddEvenSort(ArrayForSort.data(), 0, arraySize - 1);
+
+    double execution_time = 
+            (end.tv_sec - start.tv_sec)*1000.0;
+    execution_time+=
+            (end.tv_usec - start.tv_usec)/1000.0;
+
+    printf("Execution_time: %.20f ms\n ", execution_time); 
 
     return ArrayForSort;
 
