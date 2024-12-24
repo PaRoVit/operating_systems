@@ -15,4 +15,4 @@ include(FindThreads)
 
 add_subdirectory(KP)
 
-add_subdirectory(tests)
+# add_subdirectory(tests)

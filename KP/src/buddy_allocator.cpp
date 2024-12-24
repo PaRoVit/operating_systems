@@ -1,77 +1,101 @@
 
 #include "buddy_allocator.hpp"
-#include <algorithm>
 
-void setBlock(char* p, size_t size) {
-    *((int*) p) = size;
-}
+BuddyAllocator::BuddyAllocator(void* const memory, const size_t size) {
+    if (!memory || size == 0) {
+        throw std::invalid_argument("Invalid memory or size");
+    }
 
-int getSize(char* p) {
-    return *((int*) p);
-}
+    this->size = size;
+    this->block_size = 32;
+    this->total_blocks = this->size / this->block_size;
 
-BuddyAllocator::BuddyAllocator(const size_t allowedSize) : mem_size{allowedSize} {
-    data = (char*)malloc(allowedSize);
-    setBlock(data, allowedSize);
-    freeBlocks.push_back(data);
+    // Размещаем битовую карту в начале памяти
+    size_t bitmap_size = (this->total_blocks + 7) / 8;
+    this->bitmap = static_cast<uint8_t*>(memory);
+    std::memset(this->bitmap, 0, bitmap_size); // Все блоки свободны
+
+    // Остальную часть памяти используем для аллокации
+    this->memory = static_cast<uint8_t*>(memory) + bitmap_size;
 }
 
 BuddyAllocator::~BuddyAllocator() {
-    free(data);
+    if (memory) {
+        std::memset(memory, 0, size);
+    }
 }
 
-void *BuddyAllocator::allocate(size_t mem_size) {
-    if (mem_size == 0) {
+void* BuddyAllocator::allocate(const size_t request_size) {
+    if (request_size == 0 || request_size > size) {
         return nullptr;
     }
-    int index = -1;
-    mem_size += sizeof(int);
-    for (int i = 0; i < int(freeBlocks.size()); ++i) {
-        if (getSize(freeBlocks[i]) >= int(mem_size)) {
-            index = i;
-            break;
+
+    size_t blocks_needed = (request_size + block_size - 1) / block_size;
+    size_t free_blocks = 0;
+
+    for (size_t i = 0; i < total_blocks; ++i) {
+        if (!(bitmap[i / 8] & (1 << (i % 8)))) { // Проверяем, свободен ли блок
+            ++free_blocks;
+            if (free_blocks == blocks_needed) {
+                size_t start_block = i - blocks_needed + 1;
+
+                // Помечаем блоки как занятые
+                for (size_t j = start_block; j <= i; ++j) {
+                    bitmap[j / 8] |= (1 << (j % 8));
+                }
+
+                return static_cast<uint8_t*>(memory) + start_block * block_size;
+            }
+        } else {
+            free_blocks = 0;
         }
     }
-    if (index == -1) {
-        throw std::bad_alloc();
-    }
-    size_t currentBlockSize = getSize(freeBlocks[index]);
-    while ((currentBlockSize / 2>= mem_size)) {
-        currentBlockSize /= 2;
-        char* newBlock = freeBlocks[index] + currentBlockSize;
-        setBlock(newBlock, currentBlockSize);
-        freeBlocks.push_back(newBlock);
-    }
-    setBlock(freeBlocks[index], currentBlockSize);
-    void* allocatedMemory = freeBlocks[index] + sizeof(int);
-    freeBlocks.erase(freeBlocks.begin() + index);
-    return allocatedMemory;
+
+    return nullptr; // Недостаточно свободных блоков
 }
 
-void BuddyAllocator::deallocate(void *ptr) {
-    char *c_ptr = (char*) ptr - sizeof(int);
-    size_t size = getSize(c_ptr);
-    auto found = std::find(freeBlocks.begin(), freeBlocks.end(), c_ptr + size);
-    if (found != freeBlocks.end()) {
-        freeBlocks.erase(found);
-        setBlock(c_ptr, size * 2 );
-        freeBlocks.push_back(c_ptr);
+void BuddyAllocator::deallocate(void* const ptr) {
+    if (!ptr) {
         return;
     }
-    found = std::find(freeBlocks.begin(), freeBlocks.end(), c_ptr - size);
-    if (found != freeBlocks.end()) {
-        setBlock(c_ptr - size, size * 2);
+
+    size_t offset = static_cast<uint8_t*>(ptr) - static_cast<uint8_t*>(memory);
+    if (offset % block_size != 0) {
         return;
     }
-    freeBlocks.push_back(c_ptr);
+
+    size_t block_index = offset / block_size;
+
+    // Сбрасываем бит, соответствующий блоку
+    bitmap[block_index / 8] &= ~(1 << (block_index % 8));
 }
 
-void BuddyAllocator::PrintStatus(std::ostream &os) const {
-    int free_sum = 0;
-    for (auto block : freeBlocks) {
-        free_sum += getSize(block);
+size_t BuddyAllocator::getLargestFreeBlock() const {
+    size_t max_free_blocks = 0;
+    size_t current_free_blocks = 0;
+
+    for (size_t i = 0; i < total_blocks; ++i) {
+        if (!(bitmap[i / 8] & (1 << (i % 8)))) { // Если блок свободен
+            ++current_free_blocks;
+            if (current_free_blocks > max_free_blocks) {
+                max_free_blocks = current_free_blocks;
+            }
+        } else {
+            current_free_blocks = 0;
+        }
     }
-    int occ_sum = mem_size - free_sum;
-    os << "Occupied memory: " << occ_sum << std::endl;
-    os << "Free memory: " << free_sum << std::endl << std::endl;
+
+    return max_free_blocks * block_size;
+}
+
+size_t BuddyAllocator::getTotalFreeMemory() const {
+    size_t free_memory = 0;
+
+    for (size_t i = 0; i < total_blocks; ++i) {
+        if (!(bitmap[i / 8] & (1 << (i % 8)))) { // Если блок свободен
+            free_memory += block_size;
+        }
+    }
+
+    return free_memory;
 }

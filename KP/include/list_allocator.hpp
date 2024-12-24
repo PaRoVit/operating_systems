@@ -1,36 +1,31 @@
 #pragma once
 
 #include <iostream>
-#include <algorithm>
-#include <list>
+#include <cstring>
+#include <cstddef>
 
-enum class MemoryNodeType {
-    Hole,
-    Occupied
-};
+#define MIN_BLOCK_SIZE 32
 
-struct MemoryNode {
-    char* beginning;
-    size_t capacity;
-    MemoryNodeType type;
-};
-
-std::ostream& operator << (std::ostream& os, const MemoryNode& node);
 class ListAllocator {
+private:
+    struct Block {
+        size_t size;
+        Block* next;
+        bool is_free;
+    };
+
+    Block* free_list;       // Указатель на список свободных блоков
+    void* memory_start;     // Указатель на начало выделенной памяти
+    size_t total_size;      // Общий размер выделенной памяти
+
 public:
-    explicit ListAllocator(size_t data_size);
+    ListAllocator(void* memory, size_t size);
 
     ~ListAllocator();
 
-    void* allocate(size_t mem_size);
-
-
+    void* allocate(size_t size);
     void deallocate(void* ptr);
 
-    void PrintStatus(std::ostream& os) const;
-
-private:
-
-    std::list<MemoryNode> mem_list;
-    char* data;
+    size_t getLargestFreeBlock() const;
+    size_t getTotalFreeMemory() const;
 };

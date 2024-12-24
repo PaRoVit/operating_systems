@@ -1,81 +1,123 @@
 #include "list_allocator.hpp"
 
 
-std::ostream& operator << (std::ostream& os, const MemoryNode& node) {
-    return os << "Node: capacity " << node.capacity << ", type " << (node.type == MemoryNodeType::Hole ? "Hole" : "Occupied");
-}
+ListAllocator::ListAllocator(void* memory, size_t size) {
+    if (!memory || size < sizeof(ListAllocator)) {
+        throw std::invalid_argument("Invalid memory or size");
+    }
 
-ListAllocator::ListAllocator(size_t data_size) {
-    data = (char *) malloc(data_size);
-    mem_list.push_front({data, data_size, MemoryNodeType::Hole});
+    memory_start = static_cast<char*>(memory) + sizeof(ListAllocator);
+    total_size = size - sizeof(ListAllocator);
+
+    free_list = reinterpret_cast<Block*>(memory_start);
+    free_list->size = total_size - sizeof(Block);
+    free_list->next = nullptr;
+    free_list->is_free = true;
 }
 
 ListAllocator::~ListAllocator() {
-    free(data);
+    if (memory_start) {
+        std::memset(memory_start, 0, total_size);
+    }
 }
 
-void *ListAllocator::allocate(size_t mem_size) {
-    if (mem_size == 0) {
+void* ListAllocator::allocate(size_t size) {
+    if (size == 0) {
         return nullptr;
     }
-    size_t size_of_node = 0;
-    auto needed_node = mem_list.end();
-    for (auto it = mem_list.begin(); it != mem_list.end(); ++it) {
-        if (it->type == MemoryNodeType::Hole && it->capacity >= mem_size &&
-            (size_of_node == 0 || it->capacity < size_of_node)) {
-            size_of_node = it->capacity;
-            needed_node = it;
+
+    size = (size + MIN_BLOCK_SIZE - 1) / MIN_BLOCK_SIZE * MIN_BLOCK_SIZE;
+
+    Block* best = nullptr;
+    Block* prev_best = nullptr;
+    Block* current = free_list;
+    Block* prev = nullptr;
+
+    while (current) {
+        if (current->is_free && current->size >= size) {
+            if (!best || current->size < best->size) {
+                best = current;
+                prev_best = prev;
+            }
         }
+        prev = current;
+        current = current->next;
     }
-    if (size_of_node == 0) {
-        throw std::bad_alloc();
-    }
-    if (mem_size == size_of_node) {
-        needed_node->type = MemoryNodeType::Occupied;
-    } else {
-        MemoryNode new_node{needed_node->beginning + mem_size,
-                            needed_node->capacity - mem_size,
-                            MemoryNodeType::Hole};
-        needed_node->capacity = mem_size;
-        needed_node->type = MemoryNodeType::Occupied;
-        mem_list.insert(std::next(needed_node), new_node);
-    }
-    return (void *) (needed_node->beginning);
-}
 
-void ListAllocator::deallocate(void *ptr) {
-    auto it = std::find_if(mem_list.begin(), mem_list.end(), [ptr](const MemoryNode &node) {
-        return node.beginning == (char *) ptr && node.type == MemoryNodeType::Occupied;
-    });
-    if (it == mem_list.end()) {
-        throw std::logic_error("This pointer wasnt allocated by this allocator");
-    }
-    it->type = MemoryNodeType::Hole;
-    if (it != mem_list.begin() && std::prev(it)->type == MemoryNodeType::Hole) {
-        auto prev_it = std::prev(it);
-        prev_it->capacity += it->capacity;
-        mem_list.erase(it);
-        it = prev_it;
-    }
-    if (std::next(it) != mem_list.end() && std::next(it)->type == MemoryNodeType::Hole) {
-        auto next_it = std::next(it);
-        it->capacity += next_it->capacity;
-        mem_list.erase(next_it);
-    }
-}
+    if (best) {
+        size_t remain_size = best->size - size;
+        if (remain_size >= sizeof(Block) + MIN_BLOCK_SIZE) {
+            Block* new_block = reinterpret_cast<Block*>(
+                reinterpret_cast<char*>(best) + sizeof(Block) + size);
+            new_block->size = remain_size - sizeof(Block);
+            new_block->is_free = true;
+            new_block->next = best->next;
+            best->next = new_block;
+            best->size = size;
+        }
 
-void ListAllocator::PrintStatus(std::ostream& os) const {
-    int occ_sum = 0;
-    int free_sum = 0;
-    for (const auto& elem : mem_list) {
-        os << elem << "\n";
-        if (elem.type == MemoryNodeType::Hole) {
-            free_sum += elem.capacity;
+        best->is_free = false;
+
+        if (prev_best == nullptr) {
+            free_list = best->next;
         } else {
-            occ_sum += elem.capacity;
+            prev_best->next = best->next;
+        }
+
+        return reinterpret_cast<void*>(reinterpret_cast<char*>(best) + sizeof(Block));
+    }
+
+    return nullptr;
+}
+
+void ListAllocator::deallocate(void* ptr) {
+    if (!ptr) {
+        return;
+    }
+
+    Block* head = reinterpret_cast<Block*>(
+        reinterpret_cast<char*>(ptr) - sizeof(Block));
+
+    head->is_free = true;
+    head->next = free_list;
+    free_list = head;
+
+    Block* current = free_list;
+    while (current && current->next) {
+        if (reinterpret_cast<char*>(current) + sizeof(Block) + current->size ==
+            reinterpret_cast<char*>(current->next)) {
+            current->size += current->next->size + sizeof(Block);
+            current->next = current->next->next;
+        } else {
+            current = current->next;
         }
     }
-    os << "Occupied memory " << occ_sum << "\n";
-    os << "Free memory " << free_sum << "\n\n";
+}
 
+size_t ListAllocator::getLargestFreeBlock() const {
+    size_t max_free_size = 0;
+
+    Block* current = free_list;
+    while (current) {
+        if (current->is_free && current->size > max_free_size) {
+            max_free_size = current->size;
+        }
+        current = current->next;
+    }
+
+    return max_free_size;
+}
+
+size_t ListAllocator::getTotalFreeMemory() const {
+    size_t total_free_size = 0;
+
+    Block* current = free_list;
+    while (current) {
+        if (current->is_free) {
+            total_free_size += current->size;
+        }
+        current = current->next;
+    }
+
+    return total_free_size;
 }
